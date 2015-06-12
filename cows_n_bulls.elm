@@ -1,6 +1,6 @@
-import Html exposing (text, Attribute, div, Html, input)
+import Html exposing (text, Attribute, div, Html, input, button)
 import Html.Attributes as Attr exposing (style, placeholder, value, maxlength, id, autofocus, name)
-import Html.Events exposing (on, targetValue, keyCode)
+import Html.Events exposing (on, onClick, targetValue, keyCode)
 import String
 import Char
 import List
@@ -26,6 +26,7 @@ type Action =
   NoOp
   | Guess
   | UpdateInput String
+  | Restart
 
 update : Action -> Model -> Model
 update action model =
@@ -35,16 +36,17 @@ update action model =
       UpdateInput str ->
         { model |
             input <- str,
-            guess <- "",
-            result <- (0, 0)
+            guess <- ""
          }
 
       Guess ->
-          { model |
+        { model |
             guess <- if validGuess model.word model.input then model.input else "",
             result <- checkGuess model.word model.input,
             input <- ""
-          }
+        }
+
+      Restart -> initialModel
 
 
 -- VIEW
@@ -63,6 +65,7 @@ view address model =
         []
         [ lazy2 guessWord address model.input
         , result
+        , button [ onClick address Restart, restartStyle ] [ text "Restart" ]
         , footer
         ]
 
@@ -110,6 +113,17 @@ inputStyle =
     , ("font-size", "2em")
     , ("text-align", "center")
     ]
+
+restartStyle : Attribute
+restartStyle =
+  style
+    [ ("height", "40px")
+    , ("padding", "10px")
+    , ("margin-left", "48%")
+    , ("font-size", "1em")
+    , ("text-align", "center")
+    ]
+
 
 footerStyle : Attribute
 footerStyle =

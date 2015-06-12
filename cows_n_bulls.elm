@@ -1,7 +1,35 @@
-import Html exposing (text, Attribute, div)
-import Html.Attributes as Attr exposing (style)
+import Html exposing (text, Attribute, div, Html, input)
+import Html.Attributes as Attr exposing (style, placeholder, value, maxlength)
 
+-- VIEW
 
+view : String -> Html
+view string =
+  let field =
+        input
+          [ placeholder "Guess"
+          , value string
+          , maxlength 4
+          , inputStyle
+          ]
+          []
+
+      footer =
+        div [ footerStyle ] [ text "Made with <3 in Bangalore. In memory of the best cows & bulls player I've known." ]
+  in
+      div [] [field, footer]
+
+-- STYLES
+
+inputStyle : Attribute
+inputStyle =
+  style
+    [ ("width", "100%")
+    , ("height", "40px")
+    , ("padding", "10px 0")
+    , ("font-size", "2em")
+    , ("text-align", "center")
+    ]
 
 footerStyle : Attribute
 footerStyle =
@@ -15,5 +43,6 @@ footerStyle =
     , ("border-top", "solid gray 1px")
     ]
 
-main =
-  div [ footerStyle ] [ text "Made with <3 in Bangalore. In memory of the best cows & bulls player I've known." ]
+-- WIRING
+
+main = view ""

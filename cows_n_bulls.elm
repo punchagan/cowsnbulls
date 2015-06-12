@@ -65,7 +65,11 @@ view address model =
         []
         [ lazy2 guessWord address model.input
         , result
-        , button [ onClick address Restart, restartStyle ] [ text "Restart" ]
+        , button
+          [ onClick address Restart
+          , restartStyle
+          ]
+          [ text "Restart" ]
         , footer
         ]
 
@@ -95,7 +99,6 @@ guessWord address guess =
         , inputStyle
         ]
         []
-
 
 
 footer : Html
@@ -143,11 +146,19 @@ main : Signal Html
 main =
   Signal.map (view actions.address) model
 
-
 -- manage the model of our application over time
 model : Signal Model
 model =
   Signal.foldp update initialModel actions.signal
+
+initialModel : Model
+initialModel =
+  let words = ["word", "cows", "read", "pink"]
+  in
+    { emptyModel |
+        words <- words,
+        word <- getRandomItem 42 words |> Maybe.withDefault "word"
+    }
 
 -- actions from user input
 actions : Signal.Mailbox Action

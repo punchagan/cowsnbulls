@@ -1,6 +1,9 @@
 import Html exposing (text, Attribute, div, Html, input)
 import Html.Attributes as Attr exposing (style, placeholder, value, maxlength)
 import Html.Events exposing (on, targetValue)
+import String
+import Char
+
 
 -- VIEW
 
@@ -52,3 +55,12 @@ main = Signal.map view guess.signal
 guess : Signal.Mailbox String
 guess =
   Signal.mailbox ""
+
+checkGuess : String -> String
+checkGuess guess =
+  let message =
+        if String.length guess == 4 && String.all Char.isLower (String.toLower guess)
+          then "4 bulls"
+          else ""
+  in
+      message

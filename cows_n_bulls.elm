@@ -13,33 +13,37 @@ import Html.Lazy exposing (lazy, lazy2, lazy3)
 
 type alias Model =
     { word: String
+    , input: String
     , guess: String
     , result: (Int, Int)
     }
 
-initialModel = { word = "word", guess = "", result = (0, 0)}
+initialModel = { word = "word", input = "", guess="", result = (0, 0)}
 
 -- UPDATE
 
 type Action =
   NoOp
   | Guess
-  | UpdateGuess String
+  | UpdateInput String
 
 update : Action -> Model -> Model
 update action model =
     case action of
       NoOp -> model
 
-      UpdateGuess str ->
+      UpdateInput str ->
         { model |
-            guess <- str,
+            input <- str,
+            guess <- "",
             result <- (0, 0)
          }
 
       Guess ->
           { model |
-              result <- checkGuess model.word model.guess
+            guess <- model.input,
+            result <- checkGuess model.word model.input,
+            input <- ""
           }
 
 
@@ -48,12 +52,16 @@ update action model =
 view : Address Action -> Model -> Html
 view address model =
   let result =
-        div [inputStyle] [ text <| toString model.result ]
+        div [inputStyle] [ (if model.guess == ""
+                            then ""
+                            else model.guess ++ " -- ") ++ toString model.result
+                           |> text
+                         ]
 
   in
       div
         []
-        [ lazy2 guessWord address model.guess
+        [ lazy2 guessWord address model.input
         , result
         , footer
         ]
@@ -79,7 +87,7 @@ guessWord address guess =
         , autofocus True
         , value guess
         , name "guess"
-        , on "input" targetValue (Signal.message address << UpdateGuess)
+        , on "input" targetValue (Signal.message address << UpdateInput)
         , onEnter address Guess
         , inputStyle
         ]
@@ -88,7 +96,7 @@ guessWord address guess =
 
 
 footer : Html
-footer = div [ footerStyle ] [ text "Made with <3 in Bangalore. In memory of the best cows & bulls player I've known." ]
+footer = div [ footerStyle ] [ text "Built with <3 in Bangalore. In memory of the best cows & bulls player I've known." ]
 
 
 -- STYLES

@@ -1,5 +1,6 @@
 import Html exposing (text, Attribute, div, Html, input)
 import Html.Attributes as Attr exposing (style, placeholder, value, maxlength)
+import Html.Events exposing (on, targetValue)
 
 -- VIEW
 
@@ -10,6 +11,7 @@ view string =
           [ placeholder "Guess"
           , value string
           , maxlength 4
+          , on "input" targetValue (Signal.message guess.address)
           , inputStyle
           ]
           []
@@ -45,4 +47,8 @@ footerStyle =
 
 -- WIRING
 
-main = view ""
+main = Signal.map view guess.signal
+
+guess : Signal.Mailbox String
+guess =
+  Signal.mailbox ""

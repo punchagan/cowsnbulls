@@ -1,13 +1,13 @@
+import Char
 import Html exposing (text, Attribute, div, Html, input, button)
 import Html.Attributes as Attr exposing (style, placeholder, value, maxlength, id, autofocus, name)
 import Html.Events exposing (on, onClick, targetValue, keyCode)
-import String
-import Char
+import Html.Lazy exposing (lazy, lazy2, lazy3)
+import Json.Decode as Json
 import List
 import Set
-import Json.Decode as Json
 import Signal exposing (Signal, Address)
-import Html.Lazy exposing (lazy, lazy2, lazy3)
+import String
 
 -- MODEL
 
@@ -18,7 +18,7 @@ type alias Model =
     , result: (Int, Int)
     }
 
-initialModel = { word = "word", input = "", guess="", result = (0, 0)}
+initialModel = { word = "word", input = "", guess="", result = (0, 0) }
 
 -- UPDATE
 

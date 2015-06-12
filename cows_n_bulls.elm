@@ -5,6 +5,8 @@ import Html.Events exposing (on, onClick, targetValue, keyCode)
 import Html.Lazy exposing (lazy, lazy2, lazy3)
 import Json.Decode as Json
 import List
+import Maybe
+import Random
 import Set
 import Signal exposing (Signal, Address)
 import String
@@ -16,9 +18,10 @@ type alias Model =
     , input: String
     , guess: String
     , result: (Int, Int)
+    , words : List String
     }
 
-initialModel = { word = "word", input = "", guess="", result = (0, 0) }
+emptyModel = { word = "", input = "", guess="", result = (0, 0), words = [] }
 
 -- UPDATE
 
@@ -46,8 +49,13 @@ update action model =
             input <- ""
         }
 
-      Restart -> initialModel
-
+      Restart ->
+      let words = ["word", "cows", "read", "pink"]
+      in
+        { initialModel |
+        -- word <- model.words |> getRandomItem ((round <~ model.clock) |> show |> toString)  |> Maybe.withDefault "word"
+          word <- getRandomItem 123 model.words |> Maybe.withDefault "word"
+        }
 
 -- VIEW
 
@@ -182,3 +190,10 @@ validGuess word guess =
   && String.length word == (String.toList guess |> Set.fromList |> Set.toList |> List.length)
   && String.all Char.isLower (String.toLower guess)
   )
+
+getRandomItem : Int -> List a -> Maybe a
+getRandomItem seed xs =
+    let n = List.length xs
+        (m, _) = Random.generate (Random.int 0 n) (Random.initialSeed seed)
+    in
+      List.head <| List.drop m xs

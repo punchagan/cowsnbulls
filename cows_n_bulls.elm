@@ -41,7 +41,7 @@ update action model =
 
       Guess ->
           { model |
-            guess <- model.input,
+            guess <- if validGuess model.word model.input then model.input else "",
             result <- checkGuess model.word model.input,
             input <- ""
           }
@@ -54,7 +54,7 @@ view address model =
   let result =
         div [inputStyle] [ (if model.guess == ""
                             then ""
-                            else model.guess ++ " -- ") ++ toString model.result
+                            else model.guess ++ " -- " ++ toString model.result)
                            |> text
                          ]
 
@@ -82,7 +82,7 @@ guessWord : Address Action -> String -> Html
 guessWord address guess =
       input
         [ id "guess"
-        , placeholder "Guess"
+        , placeholder "Guess a 4-letter word."
         , maxlength 4
         , autofocus True
         , value guess
@@ -147,10 +147,7 @@ guess =
 
 checkGuess : String -> String -> (Int, Int)
 checkGuess word guess =
-  if (  String.length guess == String.length word
-     && String.length word == (String.toList guess |> Set.fromList |> Set.toList |> List.length)
-     && String.all Char.isLower (String.toLower guess)
-     )
+  if validGuess word guess
     then
       let guess_set = String.toList guess |> Set.fromList
           word_set = String.toList word |> Set.fromList
@@ -158,3 +155,10 @@ checkGuess word guess =
           bulls = String.filter (\x -> let y = String.fromChar x in String.indexes y word == String.indexes y guess) guess |> String.length
       in (bulls, total - bulls)
     else (0, 0)
+
+validGuess : String -> String -> Bool
+validGuess word guess =
+  (  String.length guess == String.length word
+  && String.length word == (String.toList guess |> Set.fromList |> Set.toList |> List.length)
+  && String.all Char.isLower (String.toLower guess)
+  )

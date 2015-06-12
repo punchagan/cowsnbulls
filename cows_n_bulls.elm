@@ -154,11 +154,6 @@ actions : Signal.Mailbox Action
 actions =
   Signal.mailbox NoOp
 
-
-guess : Signal.Mailbox String
-guess =
-  Signal.mailbox ""
-
 checkGuess : String -> String -> (Int, Int)
 checkGuess word guess =
   if validGuess word guess

@@ -3,6 +3,8 @@ import Html.Attributes as Attr exposing (style, placeholder, value, maxlength, i
 import Html.Events exposing (on, targetValue, keyCode)
 import String
 import Char
+import List
+import Set
 import Json.Decode as Json
 import Signal exposing (Signal, Address)
 import Html.Lazy exposing (lazy, lazy2, lazy3)
@@ -37,7 +39,7 @@ update action model =
 
       Guess ->
           { model |
-              result <- checkGuess model.guess
+              result <- checkGuess model.word model.guess
           }
 
 
@@ -135,8 +137,16 @@ guess : Signal.Mailbox String
 guess =
   Signal.mailbox ""
 
-checkGuess : String -> (Int, Int)
-checkGuess guess =
-  if String.length guess == 4 && String.all Char.isLower (String.toLower guess)
-    then (4, 0)
+checkGuess : String -> String -> (Int, Int)
+checkGuess word guess =
+  if (  String.length guess == String.length word
+     && String.length word == (String.toList guess |> Set.fromList |> Set.toList |> List.length)
+     && String.all Char.isLower (String.toLower guess)
+     )
+    then
+      let guess_set = String.toList guess |> Set.fromList
+          word_set = String.toList word |> Set.fromList
+          total = Set.intersect word_set guess_set |> Set.toList |> List.length
+          bulls = String.filter (\x -> let y = String.fromChar x in String.indexes y word == String.indexes y guess) guess |> String.length
+      in (bulls, total - bulls)
     else (0, 0)

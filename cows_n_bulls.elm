@@ -210,7 +210,8 @@ footerStyle =
   style
     [ ("width", "100%")
     , ("padding", "10px 0")
-    , ("font-size", "0.7em")
+    , ("font-size", "1em")
+    , ("opacity", "0.5")
     , ("text-align", "center")
     , ("position", "absolute")
     , ("bottom", "0px")

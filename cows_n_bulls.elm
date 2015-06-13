@@ -1,8 +1,9 @@
 import Char
-import Html exposing (text, Attribute, div, Html, input, button)
-import Html.Attributes as Attr exposing (style, placeholder, value, maxlength, id, autofocus, name)
-import Html.Events exposing (on, onClick, targetValue, keyCode)
-import Html.Lazy exposing (lazy, lazy2, lazy3)
+import Html exposing (Attribute, button, div, Html, input, text)
+import Html.Attributes as Attr exposing (autofocus, id, maxlength, name, placeholder, style, value)
+import Html.Events exposing (keyCode, on, onClick, targetValue)
+import Html.Lazy exposing (lazy2)
+import Http
 import Json.Decode as Json
 import List
 import Maybe
@@ -10,6 +11,7 @@ import Random
 import Set
 import Signal exposing (Signal, Address)
 import String
+import Task exposing (Task, andThen)
 
 -- MODEL
 
@@ -34,7 +36,8 @@ type Action =
   NoOp
   | Guess
   | UpdateInput String
-  | Restart
+  | UpdateWords (List String)
+  | PickWord String
 
 update : Action -> Model -> Model
 update action model =
@@ -43,24 +46,27 @@ update action model =
 
       UpdateInput str ->
         { model |
-            input <- str,
-            guess <- ""
+                  input <- str,
+                  guess <- ""
          }
 
       Guess ->
         { model |
-            guess <- if validGuess model.word model.input then model.input else "",
-            result <- checkGuess model.word model.input,
-            input <- ""
+                  guess <- if validGuess model.word model.input then model.input else "",
+                  result <- checkGuess model.word model.input,
+                  input <- ""
         }
 
-      Restart ->
-      let words = ["word", "cows", "read", "pink"]
-      in
-        { initialModel |
-        -- word <- model.words |> getRandomItem ((round <~ model.clock) |> show |> toString)  |> Maybe.withDefault "word"
-          word <- getRandomItem 123 model.words |> Maybe.withDefault "word"
-        }
+      UpdateWords words ->
+          { model |
+                    words <- words
+          }
+
+      PickWord word ->
+          { emptyModel |
+                         word <- word,
+                         words <- model.words
+          }
 
 -- VIEW
 
@@ -76,10 +82,10 @@ view address model =
   in
       div
         []
-        [ lazy2 guessWord address model.input
+        [ lazy2 guessWord address model
         , result
         , button
-          [ onClick address Restart
+          [ onClick address (model.words |> getRandomItem 550 |> Maybe.withDefault "" |> PickWord)
           , restartStyle
           ]
           [ text "Restart" ]
@@ -98,14 +104,17 @@ is13 : Int -> Result String ()
 is13 code =
   if code == 13 then Ok () else Err "not the right key code"
 
-guessWord : Address Action -> String -> Html
-guessWord address guess =
+guessWord : Address Action -> Model -> Html
+guessWord address model =
       input
         [ id "guess"
-        , placeholder "Guess a 4-letter word."
+        , placeholder ( if (List.length model.words > 0 && (String.length model.word == 4))
+                        then "Guess a 4-letter word."
+                        else "Wait, Downloading word-list..."
+                      )
         , maxlength 4
         , autofocus True
-        , value guess
+        , value model.input
         , name "guess"
         , on "input" targetValue (Signal.message address << UpdateInput)
         , onEnter address Guess
@@ -133,12 +142,12 @@ inputStyle =
 restartStyle : Attribute
 restartStyle =
   style
-    [ ("height", "40px")
-    , ("padding", "10px")
-    , ("margin-left", "48%")
-    , ("font-size", "1em")
-    , ("text-align", "center")
-    ]
+  [ ("height", "40px")
+  , ("padding", "10px")
+  , ("margin-left", "48%")
+  , ("font-size", "1em")
+  , ("text-align", "center")
+  ]
 
 
 footerStyle : Attribute
@@ -162,21 +171,39 @@ main =
 -- manage the model of our application over time
 model : Signal Model
 model =
-  Signal.foldp update initialModel actions.signal
+  Signal.foldp update emptyModel userInput
 
-initialModel : Model
-initialModel =
-  let words = ["word", "cows", "read", "pink"]
-  in
-    { emptyModel |
-        words <- words,
-        word <- getRandomItem 42 words |> Maybe.withDefault "word"
-    }
+word_db : Signal.Mailbox (List String)
+word_db =
+    Signal.mailbox []
+
+pickedWord : Signal.Mailbox String
+pickedWord =
+    Signal.mailbox ""
+
+port getWords : Task Http.Error ()
+port getWords =
+    let
+        url = "/word_list_4.txt"
+    in
+      Http.getString url
+              `andThen` \content -> Signal.send word_db.address (String.lines content)
+              `andThen` \_ -> (String.lines content |> getRandomItem 0 |> Maybe.withDefault "" |> Signal.send pickedWord.address)
 
 -- actions from user input
 actions : Signal.Mailbox Action
 actions =
-  Signal.mailbox NoOp
+    Signal.mailbox NoOp
+
+userInput : Signal Action
+userInput =
+    Signal.mergeMany [
+               actions.signal,
+               Signal.map UpdateWords word_db.signal,
+               Signal.map PickWord pickedWord.signal
+              ]
+
+-- HELPERS
 
 checkGuess : String -> String -> (Int, Int)
 checkGuess word guess =

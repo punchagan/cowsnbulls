@@ -1,6 +1,7 @@
 import Char
-import Html exposing (Attribute, button, div, Html, input, text)
-import Html.Attributes as Attr exposing (autofocus, id, maxlength, name, placeholder, style, value)
+import Html exposing (a, Attribute, button, div, Html, input, text)
+import Html.Attributes as Attr
+        exposing (autofocus, href, id, maxlength, name, placeholder, style, target, value)
 import Html.Events exposing (keyCode, on, onClick, targetValue)
 import Html.Lazy exposing (lazy2)
 import Http
@@ -23,6 +24,7 @@ type alias Model =
     , result: (Int, Int)
     , words: List String
     , guess_count: Int
+    , guessed: Bool
     }
 
 emptyModel = { word = ""
@@ -31,6 +33,7 @@ emptyModel = { word = ""
              , guess_count = 0
              , result = (0, 0)
              , words = []
+             , guessed = False
              }
 
 -- UPDATE
@@ -50,17 +53,23 @@ update action model =
       UpdateInput str ->
         { model |
                   input <- str,
-                  guess <- ""
+                  guess <- "",
+                  guessed <- False
          }
 
       Guess ->
-        { model |
-                  guess <- if validWord model.words model.input then model.input else "",
-                  result <- checkGuess model.word model.input,
-                  input <- "",
-                  guess_count <- model.guess_count + 1
+          let valid = validWord model.words model.input
+          in
+            if valid
+            then { model |
+                           guess <- model.input,
+                           result <- checkGuess model.word model.input,
+                           input <- "",
+                           guess_count <- model.guess_count + 1,
+                           guessed <- model.input == model.word
 
-        }
+                 }
+            else model
 
       UpdateWords words ->
           { emptyModel |
@@ -78,17 +87,31 @@ update action model =
 view : Address Action -> Model -> Html
 view address model =
     let
-        display_result =
+        dict_div =
+            div
+            [ inputStyle ]
+            [
+             ( a
+               [ href ("http://www.dict.org/bin/Dict?Form=Dict2&Database=*&Query=" ++ model.word)
+               , target "_blank"
+               ]
+               [ text <| "See meaning: " ++ model.word ]
+             )
+            ]
+
+        show_result =
             \(bulls, cows) -> toString bulls ++ " bulls, " ++ toString cows ++ " cows"
+
         result =
             div [inputStyle] [ text <|
                                     if model.guess == ""
                                     then ""
-                                    else (display_result model.result) ++ " in " ++ model.guess
+                                    else (show_result model.result) ++ " in \"" ++ model.guess ++ "\""
                              ]
+        guessed = if model.guessed then "Hooray! Guessed in " else ""
         guess_count =
             div [inputStyle] [ text <|
-                                    if model.guess_count > 0
+                                    guessed ++ if model.guess_count > 0
                                     then toString model.guess_count ++
                                          if model.guess_count == 1 then " guess" else " guesses"
                                     else ""
@@ -96,7 +119,7 @@ view address model =
     in
       div
       []
-      [ lazy2 guessWord address model
+      [ if model.guessed then dict_div else lazy2 guessWord address model
       , result
       , guess_count
       , button

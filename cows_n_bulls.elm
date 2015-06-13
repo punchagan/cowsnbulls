@@ -22,11 +22,13 @@ type alias Model =
     , guess: String
     , result: (Int, Int)
     , words: List String
+    , guess_count: Int
     }
 
 emptyModel = { word = ""
              , input = ""
              , guess=""
+             , guess_count = 0
              , result = (0, 0)
              , words = []
              }
@@ -53,14 +55,16 @@ update action model =
 
       Guess ->
         { model |
-                  guess <- if validGuess model.word model.input then model.input else "",
+                  guess <- if validWord model.words model.input then model.input else "",
                   result <- checkGuess model.word model.input,
-                  input <- ""
+                  input <- "",
+                  guess_count <- model.guess_count + 1
+
         }
 
       UpdateWords words ->
-          { model |
-                    words <- words
+          { emptyModel |
+                         words <- words
           }
 
       PickWord seed ->
@@ -77,15 +81,24 @@ view address model =
         display_result =
             \(bulls, cows) -> toString bulls ++ " bulls, " ++ toString cows ++ " cows"
         result =
-            div [inputStyle] [ (if model.guess == ""
-                                then ""
-                                else model.guess ++ " -- " ++ (display_result model.result)) |> text
+            div [inputStyle] [ text <|
+                                    if model.guess == ""
+                                    then ""
+                                    else (display_result model.result) ++ " in " ++ model.guess
+                             ]
+        guess_count =
+            div [inputStyle] [ text <|
+                                    if model.guess_count > 0
+                                    then toString model.guess_count ++
+                                         if model.guess_count == 1 then " guess" else " guesses"
+                                    else ""
                              ]
     in
       div
       []
       [ lazy2 guessWord address model
       , result
+      , guess_count
       , button
         [ onClick pickWord.address 1
         , restartStyle
@@ -211,21 +224,15 @@ updateEvents =
 
 checkGuess : String -> String -> (Int, Int)
 checkGuess word guess =
-  if validGuess word guess
-    then
-      let guess_set = String.toList guess |> Set.fromList
-          word_set = String.toList word |> Set.fromList
-          total = Set.intersect word_set guess_set |> Set.toList |> List.length
-          bulls = String.filter (\x -> let y = String.fromChar x in String.indexes y word == String.indexes y guess) guess |> String.length
-      in (bulls, total - bulls)
-    else (0, 0)
+    let guess_set = String.toList guess |> Set.fromList
+        word_set = String.toList word |> Set.fromList
+        total = Set.intersect word_set guess_set |> Set.toList |> List.length
+        bulls = String.filter (\x -> let y = String.fromChar x in String.indexes y word == String.indexes y guess) guess |> String.length
+    in (bulls, total - bulls)
 
-validGuess : String -> String -> Bool
-validGuess word guess =
-  (  String.length guess == String.length word
-  && String.length word == (String.toList guess |> Set.fromList |> Set.toList |> List.length)
-  && String.all Char.isLower (String.toLower guess)
-  )
+validWord : (List String) -> String -> Bool
+validWord words guess =
+    List.member guess words
 
 getRandomItem : Random.Seed -> List a -> Maybe a
 getRandomItem seed xs =

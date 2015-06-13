@@ -4467,7 +4467,7 @@ Elm.Main.make = function (_elm) {
             switch (_.ctor)
             {case "_Tuple2": return _._0;}
             _U.badCase($moduleName,
-            "on line 283, column 18 to 55");
+            "on line 294, column 18 to 55");
          }();
          return $List.head(A2($List.drop,
          m,
@@ -4622,13 +4622,53 @@ Elm.Main.make = function (_elm) {
              ,_0: a};
    };
    var Guess = {ctor: "Guess"};
+   var NoOp = {ctor: "NoOp"};
+   var actions = $Signal.mailbox(NoOp);
+   var updateEvents = $Signal.mergeMany(_L.fromArray([actions.signal
+                                                     ,A2($Signal.map,
+                                                     UpdateWords,
+                                                     word_db.signal)
+                                                     ,A2($Signal.map,
+                                                     PickWord,
+                                                     A2($Signal.sampleOn,
+                                                     pickWord.signal,
+                                                     clockSeed))]));
+   var Model = F8(function (a,
+   b,
+   c,
+   d,
+   e,
+   f,
+   g,
+   h) {
+      return {_: {}
+             ,guess: c
+             ,guess_count: f
+             ,guessed: g
+             ,input: b
+             ,message: h
+             ,result: d
+             ,word: a
+             ,words: e};
+   });
+   var showMessage = function (message) {
+      return function () {
+         switch (message.ctor)
+         {case "DownloadMessage":
+            return "Wait, Downloading word-list...";
+            case "ErrorMessage":
+            return "Only \'valid\' 4-letter, without repetition! Should we add word to our list?";
+            case "GuessMessage":
+            return "Guess a 4-letter word.";}
+         _U.badCase($moduleName,
+         "between lines 24 and 27");
+      }();
+   };
    var guessWord = F2(function (address,
    model) {
       return A2($Html.input,
       _L.fromArray([$Html$Attributes.id("guess")
-                   ,$Html$Attributes.placeholder(_U.cmp($List.length(model.words),
-                   0) > 0 && _U.eq($String.length(model.word),
-                   4) ? "Guess a 4-letter word." : "Wait, Downloading word-list...")
+                   ,$Html$Attributes.placeholder(showMessage(model.message))
                    ,$Html$Attributes.maxlength(4)
                    ,$Html$Attributes.autofocus(true)
                    ,$Html$Attributes.value(model.input)
@@ -4657,19 +4697,19 @@ Elm.Main.make = function (_elm) {
          $Basics.toString(model.guess_count),
          _U.eq(model.guess_count,
          1) ? " guess" : " guesses") : ""))]));
-         var show_result = function (_v7) {
+         var show_result = function (_v8) {
             return function () {
-               switch (_v7.ctor)
+               switch (_v8.ctor)
                {case "_Tuple2":
                   return A2($Basics._op["++"],
-                    $Basics.toString(_v7._0),
+                    $Basics.toString(_v8._0),
                     A2($Basics._op["++"],
                     " bulls, ",
                     A2($Basics._op["++"],
-                    $Basics.toString(_v7._1),
+                    $Basics.toString(_v8._1),
                     " cows")));}
                _U.badCase($moduleName,
-               "on line 117, column 31 to 87");
+               "on line 131, column 31 to 87");
             }();
          };
          var result = A2($Html.div,
@@ -4718,22 +4758,15 @@ Elm.Main.make = function (_elm) {
                       ,footer]));
       }();
    });
-   var NoOp = {ctor: "NoOp"};
-   var actions = $Signal.mailbox(NoOp);
-   var updateEvents = $Signal.mergeMany(_L.fromArray([actions.signal
-                                                     ,A2($Signal.map,
-                                                     UpdateWords,
-                                                     word_db.signal)
-                                                     ,A2($Signal.map,
-                                                     PickWord,
-                                                     A2($Signal.sampleOn,
-                                                     pickWord.signal,
-                                                     clockSeed))]));
+   var ErrorMessage = {ctor: "ErrorMessage"};
+   var GuessMessage = {ctor: "GuessMessage"};
+   var DownloadMessage = {ctor: "DownloadMessage"};
    var emptyModel = {_: {}
                     ,guess: ""
                     ,guess_count: 0
                     ,guessed: false
                     ,input: ""
+                    ,message: DownloadMessage
                     ,result: {ctor: "_Tuple2"
                              ,_0: 0
                              ,_1: 0}
@@ -4758,9 +4791,12 @@ Elm.Main.make = function (_elm) {
                                            ,["guess_count"
                                             ,model.guess_count + 1]
                                            ,["guessed"
-                                            ,_U.eq(model.input,
-                                            model.word)]],
-                 model) : model;
+                                            ,_U.eq(model.input,model.word)]
+                                           ,["message",GuessMessage]],
+                 model) : _U.replace([["input"
+                                      ,""]
+                                     ,["message",ErrorMessage]],
+                 model);
               }();
             case "NoOp": return model;
             case "PickWord":
@@ -4768,7 +4804,8 @@ Elm.Main.make = function (_elm) {
                                ,$Maybe.withDefault("")(A2(getRandomItem,
                                action._0,
                                model.words))]
-                              ,["words",model.words]],
+                              ,["words",model.words]
+                              ,["message",GuessMessage]],
               emptyModel);
             case "ShowWord":
             return _U.replace([["guessed"
@@ -4787,7 +4824,7 @@ Elm.Main.make = function (_elm) {
                                ,action._0]],
               emptyModel);}
          _U.badCase($moduleName,
-         "between lines 51 and 92");
+         "between lines 61 and 106");
       }();
    });
    var model = A3($Signal.foldp,
@@ -4797,23 +4834,11 @@ Elm.Main.make = function (_elm) {
    var main = A2($Signal.map,
    view(actions.address),
    model);
-   var Model = F7(function (a,
-   b,
-   c,
-   d,
-   e,
-   f,
-   g) {
-      return {_: {}
-             ,guess: c
-             ,guess_count: f
-             ,guessed: g
-             ,input: b
-             ,result: d
-             ,word: a
-             ,words: e};
-   });
    _elm.Main.values = {_op: _op
+                      ,DownloadMessage: DownloadMessage
+                      ,GuessMessage: GuessMessage
+                      ,ErrorMessage: ErrorMessage
+                      ,showMessage: showMessage
                       ,Model: Model
                       ,emptyModel: emptyModel
                       ,NoOp: NoOp

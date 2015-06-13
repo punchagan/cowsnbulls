@@ -73,26 +73,26 @@ update action model =
 
 view : Address Action -> Model -> Html
 view address model =
-  let result =
-        div [inputStyle] [ (if model.guess == ""
-                            then ""
-                            else model.guess ++ " -- " ++ toString model.result)
-                           |> text
-                         ]
-
-  in
+    let
+        display_result =
+            \(bulls, cows) -> toString bulls ++ " bulls, " ++ toString cows ++ " cows"
+        result =
+            div [inputStyle] [ (if model.guess == ""
+                                then ""
+                                else model.guess ++ " -- " ++ (display_result model.result)) |> text
+                             ]
+    in
       div
-        []
-        [ lazy2 guessWord address model
-        , result
-        , button
-          [ onClick pickWord.address 1
-          , restartStyle
-          ]
-          [ text "Restart" ]
-        , footer
+      []
+      [ lazy2 guessWord address model
+      , result
+      , button
+        [ onClick pickWord.address 1
+        , restartStyle
         ]
-
+        [ text "Restart" ]
+      , footer
+      ]
 
 onEnter : Address a -> a -> Attribute
 onEnter address value =

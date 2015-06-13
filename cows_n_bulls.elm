@@ -228,6 +228,7 @@ pickWord =
 port getWords : Task Http.Error ()
 port getWords =
     let
+        -- fixme: doesn't work when running from /path/index.html
         url = "/word_list_4.txt"
     in
       Http.getString url

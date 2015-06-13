@@ -195,7 +195,7 @@ siteFooter = footer
                 ]
                 [ text <| "Built" ]
                )
-             , text " with <3 in Bangalore. In memory of the best cows & bulls player I've known."
+             , text " with 💔 in Bangalore. In memory of the best cows & bulls player I've known."
              ]
 
 siteHeader : Html

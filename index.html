@@ -4467,7 +4467,7 @@ Elm.Main.make = function (_elm) {
             switch (_.ctor)
             {case "_Tuple2": return _._0;}
             _U.badCase($moduleName,
-            "on line 318, column 18 to 55");
+            "on line 331, column 18 to 55");
          }();
          return $List.head(A2($List.drop,
          m,
@@ -4712,16 +4712,31 @@ Elm.Main.make = function (_elm) {
    model) {
       return function () {
          var guessed = model.guessed && _U.cmp(model.guess_count,
-         0) > 0 ? "Hooray! Guessed in " : "";
-         var guess_count = A2($Html.div,
-         _L.fromArray([inputStyle]),
-         _L.fromArray([$Html.text(A2($Basics._op["++"],
+         0) > 0 ? A2($Basics._op["++"],
+         "Hooray! Guessed \'",
+         A2($Basics._op["++"],
+         model.word,
+         "\' in ")) : "";
+         var guess_count = A2($Basics._op["++"],
          guessed,
          _U.cmp(model.guess_count,
          0) > 0 ? A2($Basics._op["++"],
          $Basics.toString(model.guess_count),
          _U.eq(model.guess_count,
-         1) ? " guess" : " guesses") : ""))]));
+         1) ? " guess" : " guesses") : "");
+         var tweet = $Basics.not(_U.eq(guessed,
+         "")) ? A2($Html.a,
+         _L.fromArray([$Html$Attributes.href(A2($Basics._op["++"],
+                      "https://twitter.com/home?status=",
+                      A2($Basics._op["++"],
+                      guess_count,
+                      " at cowsnbulls.in")))
+                      ,$Html$Attributes.target("_blank")]),
+         _L.fromArray([A2($Html.img,
+         _L.fromArray([$Html$Attributes.src("https://cdn3.iconfinder.com/data/icons/rcons-social/32/bird_twitter-32.png")]),
+         _L.fromArray([]))])) : A2($Html.a,
+         _L.fromArray([]),
+         _L.fromArray([]));
          var show_result = function (_v8) {
             return function () {
                switch (_v8.ctor)
@@ -4773,7 +4788,12 @@ Elm.Main.make = function (_elm) {
                       address,
                       model)
                       ,result
-                      ,guess_count
+                      ,A2($Html.div,
+                      _L.fromArray([inputStyle]),
+                      _L.fromArray([$Html.text(guess_count)
+                                   ,A2($Html.div,
+                                   _L.fromArray([]),
+                                   _L.fromArray([tweet]))]))
                       ,A2($Html.button,
                       _L.fromArray([A2($Html$Events.onClick,
                                    address,

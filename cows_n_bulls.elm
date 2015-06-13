@@ -9,9 +9,10 @@ import List
 import Maybe
 import Random
 import Set
-import Signal exposing (Signal, Address)
+import Signal exposing ((<~), Signal, Address)
 import String
-import Task exposing (Task, andThen)
+import Task exposing (andThen, Task)
+import Time exposing (every, millisecond)
 
 -- MODEL
 
@@ -37,7 +38,7 @@ type Action =
   | Guess
   | UpdateInput String
   | UpdateWords (List String)
-  | PickWord String
+  | PickWord Random.Seed
 
 update : Action -> Model -> Model
 update action model =
@@ -62,9 +63,9 @@ update action model =
                     words <- words
           }
 
-      PickWord word ->
+      PickWord seed ->
           { emptyModel |
-                         word <- word,
+                         word <- getRandomItem seed model.words |> Maybe.withDefault "",
                          words <- model.words
           }
 
@@ -85,7 +86,7 @@ view address model =
         [ lazy2 guessWord address model
         , result
         , button
-          [ onClick address (model.words |> getRandomItem 550 |> Maybe.withDefault "" |> PickWord)
+          [ onClick pickWord.address 1
           , restartStyle
           ]
           [ text "Restart" ]
@@ -177,9 +178,12 @@ word_db : Signal.Mailbox (List String)
 word_db =
     Signal.mailbox []
 
-pickedWord : Signal.Mailbox String
-pickedWord =
-    Signal.mailbox ""
+clockSeed : Signal Random.Seed
+clockSeed = (\time -> Random.initialSeed (round time)) <~ (every millisecond)
+
+pickWord : Signal.Mailbox Int
+pickWord =
+    Signal.mailbox 1
 
 port getWords : Task Http.Error ()
 port getWords =
@@ -188,7 +192,7 @@ port getWords =
     in
       Http.getString url
               `andThen` \content -> Signal.send word_db.address (String.lines content)
-              `andThen` \_ -> (String.lines content |> getRandomItem 0 |> Maybe.withDefault "" |> Signal.send pickedWord.address)
+              `andThen` \_ -> (Signal.send pickWord.address 1)
 
 -- actions from user input
 actions : Signal.Mailbox Action
@@ -200,7 +204,7 @@ updateEvents =
     Signal.mergeMany [
                actions.signal,
                Signal.map UpdateWords word_db.signal,
-               Signal.map PickWord pickedWord.signal
+               Signal.map PickWord (Signal.sampleOn pickWord.signal clockSeed)
               ]
 
 -- HELPERS
@@ -223,9 +227,9 @@ validGuess word guess =
   && String.all Char.isLower (String.toLower guess)
   )
 
-getRandomItem : Int -> List a -> Maybe a
+getRandomItem : Random.Seed -> List a -> Maybe a
 getRandomItem seed xs =
     let n = List.length xs
-        (m, _) = Random.generate (Random.int 0 n) (Random.initialSeed seed)
+        (m, _) = Random.generate (Random.int 0 n) seed
     in
       List.head <| List.drop m xs

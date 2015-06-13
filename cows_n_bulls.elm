@@ -124,7 +124,7 @@ view address model =
       , guess_count
       , button
         [ onClick pickWord.address 1
-        , restartStyle
+        , if model.guess_count > 0 then restartStyle else hideStyle
         ]
         [ text "Restart" ]
       , footer
@@ -186,6 +186,10 @@ restartStyle =
   , ("text-align", "center")
   ]
 
+hideStyle : Attribute
+hideStyle =
+  style
+  [ ("display", "None") ]
 
 footerStyle : Attribute
 footerStyle =

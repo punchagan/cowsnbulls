@@ -1,5 +1,5 @@
 import Char
-import Html exposing (a, Attribute, button, div, footer, Html, input, text)
+import Html exposing (a, Attribute, button, div, footer, header, Html, input, text)
 import Html.Attributes as Attr
         exposing (autofocus, href, id, maxlength, name, placeholder, style, target, value)
 import Html.Events exposing (keyCode, on, onClick, targetValue)
@@ -147,7 +147,8 @@ view address model =
     in
       div
       []
-      [ if model.guessed then dict_div else lazy2 guessWord address model
+      [ siteHeader
+      , if model.guessed then dict_div else lazy2 guessWord address model
       , result
       , guess_count
       , button
@@ -188,6 +189,9 @@ guessWord address model =
 siteFooter : Html
 siteFooter = footer [ footerStyle ] [ text "Built with <3 in Bangalore. In memory of the best cows & bulls player I've known." ]
 
+siteHeader : Html
+siteHeader = header [ headerStyle ] [ text "Tell me you're free. I wanna play Cows & Bulls!" ]
+
 
 -- STYLES
 
@@ -227,6 +231,17 @@ footerStyle =
     , ("position", "absolute")
     , ("bottom", "0px")
     , ("border-top", "solid gray 1px")
+    ]
+
+headerStyle : Attribute
+headerStyle =
+  style
+    [ ("width", "100%")
+    , ("padding", "10px 0")
+    , ("font-size", "2.25em")
+    , ("opacity", "0.6")
+    , ("text-align", "center")
+    , ("top", "0px")
     ]
 
 -- SIGNALS

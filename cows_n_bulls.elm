@@ -118,7 +118,7 @@ view address model =
 
         result =
             div [inputStyle] [ text <|
-                                    if model.guess == ""
+                                    if (model.guess == "" || model.guessed)
                                     then ""
                                     else (show_result model.result) ++ " in \"" ++ model.guess ++ "\""
                              ]
@@ -138,7 +138,7 @@ view address model =
       , guess_count
       , button
         [ onClick address ShowWord
-        , if model.guess_count > 0 then restartStyle else hideStyle
+        , if (model.guess_count > 0 && not model.guessed) then restartStyle else hideStyle
         ]
         [ text "Give up" ]
       , footer

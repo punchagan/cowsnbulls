@@ -1,5 +1,5 @@
 import Char
-import Html exposing (a, Attribute, button, div, Html, input, text)
+import Html exposing (a, Attribute, button, div, footer, Html, input, text)
 import Html.Attributes as Attr
         exposing (autofocus, href, id, maxlength, name, placeholder, style, target, value)
 import Html.Events exposing (keyCode, on, onClick, targetValue)
@@ -155,7 +155,7 @@ view address model =
         , if (model.guess_count > 0 && not model.guessed) then restartStyle else hideStyle
         ]
         [ text "Give up" ]
-      , footer
+      , siteFooter
       ]
 
 onEnter : Address a -> a -> Attribute
@@ -185,8 +185,8 @@ guessWord address model =
         []
 
 
-footer : Html
-footer = div [ footerStyle ] [ text "Built with <3 in Bangalore. In memory of the best cows & bulls player I've known." ]
+siteFooter : Html
+siteFooter = footer [ footerStyle ] [ text "Built with <3 in Bangalore. In memory of the best cows & bulls player I've known." ]
 
 
 -- STYLES

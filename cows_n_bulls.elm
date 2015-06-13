@@ -44,6 +44,7 @@ type Action =
   | UpdateInput String
   | UpdateWords (List String)
   | PickWord Random.Seed
+  | ShowWord
 
 update : Action -> Model -> Model
 update action model =
@@ -76,6 +77,14 @@ update action model =
                          words <- words
           }
 
+      ShowWord ->
+          {
+            emptyModel |
+                         guessed <- True,
+                         words <- model.words,
+                         word <- model.word
+          }
+
       PickWord seed ->
           { emptyModel |
                          word <- getRandomItem seed model.words |> Maybe.withDefault "",
@@ -87,16 +96,21 @@ update action model =
 view : Address Action -> Model -> Html
 view address model =
     let
+        restart_button =
+            button
+            [ onClick pickWord.address 1 ]
+            [ text "Restart" ]
+
         dict_div =
             div
             [ inputStyle ]
-            [
-             ( a
-               [ href ("http://www.dict.org/bin/Dict?Form=Dict2&Database=*&Query=" ++ model.word)
-               , target "_blank"
-               ]
-               [ text <| "See meaning: " ++ model.word ]
-             )
+            [ ( a
+                [ href ("http://www.dict.org/bin/Dict?Form=Dict2&Database=*&Query=" ++ model.word)
+                , target "_blank"
+                ]
+                [ text <| "See meaning: " ++ model.word ]
+              ),
+              div [] [restart_button]
             ]
 
         show_result =
@@ -108,7 +122,7 @@ view address model =
                                     then ""
                                     else (show_result model.result) ++ " in \"" ++ model.guess ++ "\""
                              ]
-        guessed = if model.guessed then "Hooray! Guessed in " else ""
+        guessed = if (model.guessed && model.guess_count > 0) then "Hooray! Guessed in " else ""
         guess_count =
             div [inputStyle] [ text <|
                                     guessed ++ if model.guess_count > 0
@@ -123,10 +137,10 @@ view address model =
       , result
       , guess_count
       , button
-        [ onClick pickWord.address 1
+        [ onClick address ShowWord
         , if model.guess_count > 0 then restartStyle else hideStyle
         ]
-        [ text "Restart" ]
+        [ text "Give up" ]
       , footer
       ]
 

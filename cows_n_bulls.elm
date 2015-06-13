@@ -171,7 +171,7 @@ main =
 -- manage the model of our application over time
 model : Signal Model
 model =
-  Signal.foldp update emptyModel userInput
+  Signal.foldp update emptyModel updateEvents
 
 word_db : Signal.Mailbox (List String)
 word_db =
@@ -195,8 +195,8 @@ actions : Signal.Mailbox Action
 actions =
     Signal.mailbox NoOp
 
-userInput : Signal Action
-userInput =
+updateEvents : Signal Action
+updateEvents =
     Signal.mergeMany [
                actions.signal,
                Signal.map UpdateWords word_db.signal,

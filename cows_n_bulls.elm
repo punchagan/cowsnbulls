@@ -187,7 +187,16 @@ guessWord address model =
 
 
 siteFooter : Html
-siteFooter = footer [ footerStyle ] [ text "Built with <3 in Bangalore. In memory of the best cows & bulls player I've known." ]
+siteFooter = footer
+             [ footerStyle ]
+             [ ( a
+                [ href ("https://github.com/punchagan/cowsnbulls")
+                , target "_blank"
+                ]
+                [ text <| "Built" ]
+               )
+             , text " with <3 in Bangalore. In memory of the best cows & bulls player I've known."
+             ]
 
 siteHeader : Html
 siteHeader = header [ headerStyle ] [ text "Tell me you're free. I wanna play Cows & Bulls!" ]

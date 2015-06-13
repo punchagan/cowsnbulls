@@ -17,6 +17,15 @@ import Time exposing (every, millisecond)
 
 -- MODEL
 
+type Message = DownloadMessage | GuessMessage | ErrorMessage
+
+showMessage : Message -> String
+showMessage message =
+    case message of
+      DownloadMessage -> "Wait, Downloading word-list..."
+      GuessMessage -> "Guess a 4-letter word."
+      ErrorMessage -> "Only 'valid' 4-letter, without repetition! Should we add word to our list?"
+
 type alias Model =
     { word: String
     , input: String
@@ -25,6 +34,7 @@ type alias Model =
     , words: List String
     , guess_count: Int
     , guessed: Bool
+    , message: Message
     }
 
 emptyModel = { word = ""
@@ -34,17 +44,17 @@ emptyModel = { word = ""
              , result = (0, 0)
              , words = []
              , guessed = False
+             , message = DownloadMessage
              }
 
 -- UPDATE
 
-type Action =
-  NoOp
-  | Guess
-  | UpdateInput String
-  | UpdateWords (List String)
-  | PickWord Random.Seed
-  | ShowWord
+type Action = NoOp
+            | Guess
+            | UpdateInput String
+            | UpdateWords (List String)
+            | PickWord Random.Seed
+            | ShowWord
 
 update : Action -> Model -> Model
 update action model =
@@ -67,10 +77,13 @@ update action model =
                            result <- checkGuess model.word model.input,
                            input <- "",
                            guess_count <- model.guess_count + 1,
-                           guessed <- model.input == model.word
-
+                           guessed <- model.input == model.word,
+                           message <- GuessMessage
                  }
-            else model
+            else { model |
+                           input <- "",
+                           message <- ErrorMessage
+                 }
 
       UpdateWords words ->
           { emptyModel |
@@ -88,7 +101,8 @@ update action model =
       PickWord seed ->
           { emptyModel |
                          word <- getRandomItem seed model.words |> Maybe.withDefault "",
-                         words <- model.words
+                         words <- model.words,
+                         message <- GuessMessage
           }
 
 -- VIEW
@@ -159,10 +173,7 @@ guessWord : Address Action -> Model -> Html
 guessWord address model =
       input
         [ id "guess"
-        , placeholder ( if (List.length model.words > 0 && (String.length model.word == 4))
-                        then "Guess a 4-letter word."
-                        else "Wait, Downloading word-list..."
-                      )
+        , placeholder <| showMessage model.message
         , maxlength 4
         , autofocus True
         , value model.input

@@ -4675,7 +4675,7 @@ Elm.Main.make = function (_elm) {
          var result = A2($Html.div,
          _L.fromArray([inputStyle]),
          _L.fromArray([$Html.text(_U.eq(model.guess,
-         "") ? "" : A2($Basics._op["++"],
+         "") || model.guessed ? "" : A2($Basics._op["++"],
          show_result(model.result),
          A2($Basics._op["++"],
          " in \"",
@@ -4713,7 +4713,7 @@ Elm.Main.make = function (_elm) {
                                    address,
                                    ShowWord)
                                    ,_U.cmp(model.guess_count,
-                                   0) > 0 ? restartStyle : hideStyle]),
+                                   0) > 0 && $Basics.not(model.guessed) ? restartStyle : hideStyle]),
                       _L.fromArray([$Html.text("Give up")]))
                       ,footer]));
       }();

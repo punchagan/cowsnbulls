@@ -1,7 +1,7 @@
 import Char
-import Html exposing (a, Attribute, button, div, footer, header, Html, input, text)
+import Html exposing (a, Attribute, button, div, footer, header, Html, input, img, text)
 import Html.Attributes as Attr
-        exposing (autofocus, href, id, maxlength, name, placeholder, style, target, value)
+        exposing (autofocus, href, id, maxlength, name, placeholder, src, style, target, value)
 import Html.Events exposing (keyCode, on, onClick, targetValue)
 import Html.Lazy exposing (lazy2)
 import Http
@@ -136,21 +136,34 @@ view address model =
                                     then ""
                                     else (show_result model.result) ++ " in \"" ++ model.guess ++ "\""
                              ]
-        guessed = if (model.guessed && model.guess_count > 0) then "Hooray! Guessed in " else ""
-        guess_count =
-            div [inputStyle] [ text <|
-                                    guessed ++ if model.guess_count > 0
-                                    then toString model.guess_count ++
-                                         if model.guess_count == 1 then " guess" else " guesses"
-                                    else ""
-                             ]
+        guessed = if (model.guessed && model.guess_count > 0)
+                  then "Hooray! Guessed '" ++ model.word ++ "' in "
+                  else ""
+
+        guess_count = guessed ++ if model.guess_count > 0
+                                 then toString model.guess_count ++
+                                      if model.guess_count == 1 then " guess" else " guesses"
+                                 else ""
+
+        tweet = if not (guessed == "")
+                then ( a
+                       [ href ("https://twitter.com/home?status=" ++ guess_count ++ " at cowsnbulls.in")
+                       , target "_blank"
+                       ]
+                       [ img
+                         [src "https://cdn3.iconfinder.com/data/icons/rcons-social/32/bird_twitter-32.png"]
+                         []
+                       ]
+                     )
+                else a [] []
+
     in
       div
       []
       [ siteHeader
       , if model.guessed then dict_div else lazy2 guessWord address model
       , result
-      , guess_count
+      , div [inputStyle] [ text <| guess_count, div [] [tweet] ]
       , button
         [ onClick address ShowWord
         , if (model.guess_count > 0 && not model.guessed) then restartStyle else hideStyle

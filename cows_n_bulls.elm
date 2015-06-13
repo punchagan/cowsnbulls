@@ -18,10 +18,15 @@ type alias Model =
     , input: String
     , guess: String
     , result: (Int, Int)
-    , words : List String
+    , words: List String
     }
 
-emptyModel = { word = "", input = "", guess="", result = (0, 0), words = [] }
+emptyModel = { word = ""
+             , input = ""
+             , guess=""
+             , result = (0, 0)
+             , words = []
+             }
 
 -- UPDATE
 

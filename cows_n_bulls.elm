@@ -227,7 +227,7 @@ port getWords =
         url = "/word_list_4.txt"
     in
       Http.getString url
-              `andThen` \content -> Signal.send word_db.address (String.lines content)
+              `andThen` \content -> Signal.send word_db.address (content |> String.trim |> String.lines)
               `andThen` \_ -> (Signal.send pickWord.address 1)
 
 -- actions from user input

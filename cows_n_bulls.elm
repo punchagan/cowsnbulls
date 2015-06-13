@@ -254,12 +254,12 @@ pickWord =
 port getWords : Task Http.Error ()
 port getWords =
     let
-        -- fixme: doesn't work when running from /path/index.html
-        url = "/word_list_4.txt"
+        url = "word_list_4.txt"
     in
       Http.getString url
               `andThen` \content -> Signal.send word_db.address (content |> String.trim |> String.lines)
               `andThen` \_ -> (Signal.send pickWord.address 1)
+
 
 -- actions from user input
 actions : Signal.Mailbox Action

@@ -4467,7 +4467,7 @@ Elm.Main.make = function (_elm) {
             switch (_.ctor)
             {case "_Tuple2": return _._0;}
             _U.badCase($moduleName,
-            "on line 294, column 18 to 55");
+            "on line 318, column 18 to 55");
          }();
          return $List.head(A2($List.drop,
          m,
@@ -4529,6 +4529,24 @@ Elm.Main.make = function (_elm) {
          });
       });
    }());
+   var headerStyle = $Html$Attributes.style(_L.fromArray([{ctor: "_Tuple2"
+                                                          ,_0: "width"
+                                                          ,_1: "100%"}
+                                                         ,{ctor: "_Tuple2"
+                                                          ,_0: "padding"
+                                                          ,_1: "10px 0"}
+                                                         ,{ctor: "_Tuple2"
+                                                          ,_0: "font-size"
+                                                          ,_1: "2.25em"}
+                                                         ,{ctor: "_Tuple2"
+                                                          ,_0: "opacity"
+                                                          ,_1: "0.6"}
+                                                         ,{ctor: "_Tuple2"
+                                                          ,_0: "text-align"
+                                                          ,_1: "center"}
+                                                         ,{ctor: "_Tuple2"
+                                                          ,_0: "top"
+                                                          ,_1: "0px"}]));
    var footerStyle = $Html$Attributes.style(_L.fromArray([{ctor: "_Tuple2"
                                                           ,_0: "width"
                                                           ,_1: "100%"}
@@ -4586,9 +4604,16 @@ Elm.Main.make = function (_elm) {
                                                         ,{ctor: "_Tuple2"
                                                          ,_0: "text-align"
                                                          ,_1: "center"}]));
-   var footer = A2($Html.div,
+   var siteHeader = A2($Html.header,
+   _L.fromArray([headerStyle]),
+   _L.fromArray([$Html.text("Tell me you\'re free. I wanna play Cows & Bulls!")]));
+   var siteFooter = A2($Html.footer,
    _L.fromArray([footerStyle]),
-   _L.fromArray([$Html.text("Built with <3 in Bangalore. In memory of the best cows & bulls player I\'ve known.")]));
+   _L.fromArray([A2($Html.a,
+                _L.fromArray([$Html$Attributes.href("https://github.com/punchagan/cowsnbulls")
+                             ,$Html$Attributes.target("_blank")]),
+                _L.fromArray([$Html.text("Built")]))
+                ,$Html.text(" with <3 in Bangalore. In memory of the best cows & bulls player I\'ve known.")]));
    var is13 = function (code) {
       return _U.eq(code,
       13) ? $Result.Ok({ctor: "_Tuple0"}) : $Result.Err("not the right key code");
@@ -4742,7 +4767,8 @@ Elm.Main.make = function (_elm) {
                       _L.fromArray([restart_button]))]));
          return A2($Html.div,
          _L.fromArray([]),
-         _L.fromArray([model.guessed ? dict_div : A3($Html$Lazy.lazy2,
+         _L.fromArray([siteHeader
+                      ,model.guessed ? dict_div : A3($Html$Lazy.lazy2,
                       guessWord,
                       address,
                       model)
@@ -4755,7 +4781,7 @@ Elm.Main.make = function (_elm) {
                                    ,_U.cmp(model.guess_count,
                                    0) > 0 && $Basics.not(model.guessed) ? restartStyle : hideStyle]),
                       _L.fromArray([$Html.text("Give up")]))
-                      ,footer]));
+                      ,siteFooter]));
       }();
    });
    var ErrorMessage = {ctor: "ErrorMessage"};
@@ -4852,11 +4878,13 @@ Elm.Main.make = function (_elm) {
                       ,onEnter: onEnter
                       ,is13: is13
                       ,guessWord: guessWord
-                      ,footer: footer
+                      ,siteFooter: siteFooter
+                      ,siteHeader: siteHeader
                       ,inputStyle: inputStyle
                       ,restartStyle: restartStyle
                       ,hideStyle: hideStyle
                       ,footerStyle: footerStyle
+                      ,headerStyle: headerStyle
                       ,main: main
                       ,model: model
                       ,word_db: word_db

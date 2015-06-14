@@ -291,7 +291,7 @@ pickWord =
 port getWords : Task Http.Error ()
 port getWords =
     let
-        url = "word_list_4.txt"
+        url = "word_list.txt"
     in
       Http.getString url
               `andThen` \content -> Signal.send word_db.address (content |> String.trim |> String.lines)

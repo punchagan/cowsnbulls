@@ -4512,7 +4512,7 @@ Elm.Main.make = function (_elm) {
    $Time.every($Time.millisecond));
    var word_db = $Signal.mailbox(_L.fromArray([]));
    var getWords = Elm.Native.Task.make(_elm).perform(function () {
-      var url = "word_list.txt";
+      var url = "word_list_0a7bf29.txt";
       return A2($Task.andThen,
       $Http.getString(url),
       function (content) {

@@ -4467,7 +4467,7 @@ Elm.Main.make = function (_elm) {
             switch (_.ctor)
             {case "_Tuple2": return _._0;}
             _U.badCase($moduleName,
-            "on line 351, column 18 to 55");
+            "on line 354, column 18 to 55");
          }();
          return $List.head(A2($List.drop,
          m,
@@ -4532,7 +4532,7 @@ Elm.Main.make = function (_elm) {
               noWordList.address,
               true);}
          _U.badCase($moduleName,
-         "between lines 304 and 309");
+         "between lines 307 and 312");
       }();
    };
    var getWords = Elm.Native.Task.make(_elm).perform(function () {
@@ -4677,23 +4677,25 @@ Elm.Main.make = function (_elm) {
                                                      ,A2($Signal.map,
                                                      NoWordList,
                                                      noWordList.signal)]));
-   var Model = F8(function (a,
+   var Model = F9(function (a,
    b,
    c,
    d,
    e,
    f,
    g,
-   h) {
+   h,
+   i) {
       return {_: {}
-             ,guess: c
-             ,guess_count: f
-             ,guessed: g
-             ,input: b
-             ,message: h
-             ,result: d
+             ,cancelled: h
+             ,count: f
+             ,done: g
+             ,guess: d
+             ,input: c
+             ,message: i
+             ,result: e
              ,word: a
-             ,words: e};
+             ,words: b};
    });
    var showMessage = function (message) {
       return function () {
@@ -4732,33 +4734,37 @@ Elm.Main.make = function (_elm) {
    var view = F2(function (address,
    model) {
       return function () {
-         var guessed = model.guessed && _U.cmp(model.guess_count,
-         0) > 0 ? A2($Basics._op["++"],
+         var guessCount = function (count) {
+            return A2($Basics._op["++"],
+            $Basics.toString(count),
+            _U.eq(count,
+            1) ? " guess" : " guesses");
+         };
+         var success = A2($Basics._op["++"],
          "Hooray! Guessed \'",
          A2($Basics._op["++"],
          model.word,
-         "\' in ")) : "";
-         var guess_count = A2($Basics._op["++"],
-         guessed,
-         _U.cmp(model.guess_count,
-         0) > 0 ? A2($Basics._op["++"],
-         $Basics.toString(model.guess_count),
-         _U.eq(model.guess_count,
-         1) ? " guess" : " guesses") : "");
-         var tweet = $Basics.not(_U.eq(guessed,
-         "")) ? A2($Html.a,
+         A2($Basics._op["++"],
+         "\' in ",
+         guessCount(model.count))));
+         var tweet_message = A2($Basics._op["++"],
+         "Hooray! I Guessed \'",
+         A2($Basics._op["++"],
+         model.word,
+         A2($Basics._op["++"],
+         " \'in ",
+         A2($Basics._op["++"],
+         guessCount(model.count),
+         " at http://cowsnbulls.in"))));
+         var tweet = A2($Html.a,
          _L.fromArray([$Html$Attributes.href(A2($Basics._op["++"],
                       "https://twitter.com/home?status=",
-                      A2($Basics._op["++"],
-                      guess_count,
-                      " at cowsnbulls.in")))
+                      tweet_message))
                       ,$Html$Attributes.target("_blank")]),
          _L.fromArray([A2($Html.img,
          _L.fromArray([$Html$Attributes.src("https://cdn3.iconfinder.com/data/icons/rcons-social/32/bird_twitter-32.png")]),
-         _L.fromArray([]))])) : A2($Html.a,
-         _L.fromArray([]),
-         _L.fromArray([]));
-         var show_result = function (_v10) {
+         _L.fromArray([]))]));
+         var showResult = function (_v10) {
             return function () {
                switch (_v10.ctor)
                {case "_Tuple2":
@@ -4768,59 +4774,68 @@ Elm.Main.make = function (_elm) {
                     " bulls, ",
                     A2($Basics._op["++"],
                     $Basics.toString(_v10._1),
-                    " cows")));}
+                    A2($Basics._op["++"],
+                    " cows",
+                    A2($Basics._op["++"],
+                    " in \'",
+                    A2($Basics._op["++"],
+                    model.guess,
+                    "\'"))))));}
                _U.badCase($moduleName,
-               "on line 138, column 31 to 87");
+               "on line 126, column 24 to 106");
             }();
          };
-         var result = A2($Html.div,
-         _L.fromArray([inputStyle]),
-         _L.fromArray([$Html.text(_U.eq(model.guess,
-         "") || model.guessed ? "" : A2($Basics._op["++"],
-         show_result(model.result),
-         A2($Basics._op["++"],
-         " in \"",
-         A2($Basics._op["++"],
-         model.guess,
-         "\""))))]));
-         var restart_button = A2($Html.button,
+         var result = _U.cmp(model.count,
+         0) > 0 && ($Basics.not(model.done) && $Basics.not(model.cancelled)) ? A2($Html.div,
+         _L.fromArray([]),
+         _L.fromArray([A2($Html.div,
+                      _L.fromArray([inputStyle]),
+                      _L.fromArray([$Html.text(_U.eq(model.guess,
+                      "") ? "" : showResult(model.result))]))
+                      ,A2($Html.div,
+                      _L.fromArray([inputStyle]),
+                      _L.fromArray([$Html.text(guessCount(model.count))]))])) : A2($Html.div,
+         _L.fromArray([]),
+         _L.fromArray([]));
+         var restartButton = A2($Html.button,
          _L.fromArray([A2($Html$Events.onClick,
          pickWord.address,
          1)]),
          _L.fromArray([$Html.text("Restart")]));
-         var dict_div = A2($Html.div,
+         var dictElements = _L.fromArray([A2($Html.a,
+                                         _L.fromArray([$Html$Attributes.href(A2($Basics._op["++"],
+                                                      "http://www.dict.org/bin/Dict?Form=Dict2&Database=*&Query=",
+                                                      model.word))
+                                                      ,$Html$Attributes.target("_blank")]),
+                                         _L.fromArray([$Html.text(A2($Basics._op["++"],
+                                         "See meaning: ",
+                                         model.word))]))
+                                         ,A2($Html.div,
+                                         _L.fromArray([]),
+                                         _L.fromArray([restartButton]))]);
+         var doneElements = A2($List.append,
+         dictElements,
+         model.done ? _L.fromArray([$Html.text(success)
+                                   ,A2($Html.div,
+                                   _L.fromArray([]),
+                                   _L.fromArray([tweet]))]) : _L.fromArray([]));
+         var doneDiv = A2($Html.div,
          _L.fromArray([inputStyle]),
-         _L.fromArray([A2($Html.a,
-                      _L.fromArray([$Html$Attributes.href(A2($Basics._op["++"],
-                                   "http://www.dict.org/bin/Dict?Form=Dict2&Database=*&Query=",
-                                   model.word))
-                                   ,$Html$Attributes.target("_blank")]),
-                      _L.fromArray([$Html.text(A2($Basics._op["++"],
-                      "See meaning: ",
-                      model.word))]))
-                      ,A2($Html.div,
-                      _L.fromArray([]),
-                      _L.fromArray([restart_button]))]));
+         doneElements);
          return A2($Html.div,
          _L.fromArray([]),
          _L.fromArray([siteHeader
-                      ,model.guessed ? dict_div : A3($Html$Lazy.lazy2,
+                      ,model.done || model.cancelled ? doneDiv : A3($Html$Lazy.lazy2,
                       guessWord,
                       address,
                       model)
                       ,result
-                      ,A2($Html.div,
-                      _L.fromArray([inputStyle]),
-                      _L.fromArray([$Html.text(guess_count)
-                                   ,A2($Html.div,
-                                   _L.fromArray([]),
-                                   _L.fromArray([tweet]))]))
                       ,A2($Html.button,
                       _L.fromArray([A2($Html$Events.onClick,
                                    address,
                                    ShowWord)
-                                   ,_U.cmp(model.guess_count,
-                                   0) > 0 && $Basics.not(model.guessed) ? restartStyle : hideStyle]),
+                                   ,_U.cmp(model.count,
+                                   0) > 0 && $Basics.not(model.done) ? restartStyle : hideStyle]),
                       _L.fromArray([$Html.text("Give up")]))
                       ,siteFooter]));
       }();
@@ -4830,9 +4845,10 @@ Elm.Main.make = function (_elm) {
    var GuessMessage = {ctor: "GuessMessage"};
    var DownloadMessage = {ctor: "DownloadMessage"};
    var emptyModel = {_: {}
+                    ,cancelled: false
+                    ,count: 0
+                    ,done: false
                     ,guess: ""
-                    ,guess_count: 0
-                    ,guessed: false
                     ,input: ""
                     ,message: DownloadMessage
                     ,result: {ctor: "_Tuple2"
@@ -4856,9 +4872,8 @@ Elm.Main.make = function (_elm) {
                                             model.word,
                                             model.input)]
                                            ,["input",""]
-                                           ,["guess_count"
-                                            ,model.guess_count + 1]
-                                           ,["guessed"
+                                           ,["count",model.count + 1]
+                                           ,["done"
                                             ,_U.eq(model.input,model.word)]
                                            ,["message",GuessMessage]],
                  model) : _U.replace([["input"
@@ -4873,14 +4888,12 @@ Elm.Main.make = function (_elm) {
               emptyModel);
             case "PickWord":
             return _U.replace([["word"
-                               ,$Maybe.withDefault("")(A2(getRandomItem,
-                               action._0,
-                               model.words))]
+                               ,"word"]
                               ,["words",model.words]
                               ,["message",GuessMessage]],
               emptyModel);
             case "ShowWord":
-            return _U.replace([["guessed"
+            return _U.replace([["cancelled"
                                ,true]
                               ,["words",model.words]
                               ,["word",model.word]],
@@ -4889,14 +4902,14 @@ Elm.Main.make = function (_elm) {
             return _U.replace([["input"
                                ,action._0]
                               ,["guess",""]
-                              ,["guessed",false]],
+                              ,["done",false]],
               model);
             case "UpdateWords":
             return _U.replace([["words"
                                ,action._0]],
               emptyModel);}
          _U.badCase($moduleName,
-         "between lines 63 and 113");
+         "between lines 65 and 116");
       }();
    });
    var model = A3($Signal.foldp,

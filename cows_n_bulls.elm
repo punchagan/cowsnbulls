@@ -12,17 +12,18 @@ import Random
 import Set
 import Signal exposing ((<~), Signal, Address)
 import String
-import Task exposing (andThen, Task)
+import Task exposing (andThen, Task, toMaybe)
 import Time exposing (every, millisecond)
 
 -- MODEL
 
-type Message = DownloadMessage | GuessMessage | ErrorMessage
+type Message = DownloadMessage | GuessMessage | ErrorMessage | NoWordListMessage
 
 showMessage : Message -> String
 showMessage message =
     case message of
-      DownloadMessage -> "Wait, Downloading word-list..."
+      DownloadMessage -> "Wait, Downloading word list..."
+      NoWordListMessage -> "Failed to download word list."
       GuessMessage -> "Guess a 4-letter word."
       ErrorMessage -> "Only 'valid' 4-letter, without repetition! Should we add word to our list?"
 
@@ -55,6 +56,7 @@ type Action = NoOp
             | UpdateWords (List String)
             | PickWord Random.Seed
             | ShowWord
+            | NoWordList Bool
 
 update : Action -> Model -> Model
 update action model =
@@ -88,6 +90,11 @@ update action model =
       UpdateWords words ->
           { emptyModel |
                          words <- words
+          }
+
+      NoWordList _ ->
+          { emptyModel |
+                         message <- NoWordListMessage
           }
 
       ShowWord ->
@@ -277,8 +284,8 @@ model : Signal Model
 model =
   Signal.foldp update emptyModel updateEvents
 
-word_db : Signal.Mailbox (List String)
-word_db =
+wordDb : Signal.Mailbox (List String)
+wordDb =
     Signal.mailbox []
 
 clockSeed : Signal Random.Seed
@@ -288,15 +295,27 @@ pickWord : Signal.Mailbox Int
 pickWord =
     Signal.mailbox 1
 
+noWordList : Signal.Mailbox Bool
+noWordList =
+    Signal.mailbox False
+
+updateWords : (Maybe String) -> Task x ()
+updateWords content =
+    case content of
+      Maybe.Nothing ->
+          Signal.send noWordList.address True
+      Maybe.Just s ->
+          (Signal.send wordDb.address (s |> String.trim |> String.lines))
+          `andThen` \_ -> (Signal.send pickWord.address 1)
+
+
 port getWords : Task Http.Error ()
 port getWords =
     let
         url = "word_list.txt"
     in
-      Http.getString url
-              `andThen` \content -> Signal.send word_db.address (content |> String.trim |> String.lines)
-              `andThen` \_ -> (Signal.send pickWord.address 1)
-
+      toMaybe (Http.getString url)
+              `andThen` updateWords
 
 -- actions from user input
 actions : Signal.Mailbox Action
@@ -307,8 +326,9 @@ updateEvents : Signal Action
 updateEvents =
     Signal.mergeMany [
                actions.signal,
-               Signal.map UpdateWords word_db.signal,
-               Signal.map PickWord (Signal.sampleOn pickWord.signal clockSeed)
+               Signal.map UpdateWords wordDb.signal,
+               Signal.map PickWord (Signal.sampleOn pickWord.signal clockSeed),
+               Signal.map NoWordList noWordList.signal
               ]
 
 -- HELPERS

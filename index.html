@@ -4467,7 +4467,7 @@ Elm.Main.make = function (_elm) {
             switch (_.ctor)
             {case "_Tuple2": return _._0;}
             _U.badCase($moduleName,
-            "on line 354, column 18 to 55");
+            "on line 353, column 18 to 55");
          }();
          return $List.head(A2($List.drop,
          m,
@@ -4532,7 +4532,7 @@ Elm.Main.make = function (_elm) {
               noWordList.address,
               true);}
          _U.badCase($moduleName,
-         "between lines 307 and 312");
+         "between lines 306 and 311");
       }();
    };
    var getWords = Elm.Native.Task.make(_elm).perform(function () {
@@ -4782,7 +4782,7 @@ Elm.Main.make = function (_elm) {
                     model.guess,
                     "\'"))))));}
                _U.badCase($moduleName,
-               "on line 126, column 24 to 106");
+               "on line 125, column 24 to 106");
             }();
          };
          var result = _U.cmp(model.count,
@@ -4888,7 +4888,9 @@ Elm.Main.make = function (_elm) {
               emptyModel);
             case "PickWord":
             return _U.replace([["word"
-                               ,"word"]
+                               ,$Maybe.withDefault("")(A2(getRandomItem,
+                               action._0,
+                               model.words))]
                               ,["words",model.words]
                               ,["message",GuessMessage]],
               emptyModel);
@@ -4909,7 +4911,7 @@ Elm.Main.make = function (_elm) {
                                ,action._0]],
               emptyModel);}
          _U.badCase($moduleName,
-         "between lines 65 and 116");
+         "between lines 65 and 115");
       }();
    });
    var model = A3($Signal.foldp,

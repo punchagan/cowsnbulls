@@ -17,14 +17,15 @@ import Time exposing (every, millisecond)
 
 -- MODEL
 
-type Message = DownloadMessage | GuessMessage | ErrorMessage | NoWordListMessage
+type Message = DownloadMessage | StartMessage | GuessMessage | ErrorMessage | NoWordListMessage
 
 showMessage : Message -> String
 showMessage message =
     case message of
       DownloadMessage -> "Wait, Downloading word list..."
       NoWordListMessage -> "Failed to download word list."
-      GuessMessage -> "Guess a 4-letter word."
+      StartMessage -> "I thought of a 4-letter word. Guess"
+      GuessMessage -> "Next guess?"
       ErrorMessage -> "Only 'valid' 4-letter, without repetition! Should we add word to our list?"
 
 type alias Model =
@@ -111,7 +112,7 @@ update action model =
           { emptyModel |
                          word <- getRandomItem seed model.words |> Maybe.withDefault "",
                          words <- model.words,
-                         message <- GuessMessage
+                         message <- StartMessage
           }
 
 -- VIEW
@@ -221,7 +222,16 @@ siteFooter = footer
              ]
 
 siteHeader : Html
-siteHeader = header [ headerStyle ] [ text "Tell me you're free. I wanna play Cows & Bulls!" ]
+siteHeader = header
+             [ headerStyle ]
+             [ text "Tell me you're free. I wanna play "
+             , a
+               [ href "https://en.wikipedia.org/wiki/Bulls_and_Cows#The_word_version"
+               , target "_blank"
+               ]
+               [ text "Cows & Bulls!" ]
+             ]
+
 
 
 -- STYLES

@@ -29,22 +29,24 @@ showMessage message =
 
 type alias Model =
     { word: String
+    , words: List String
     , input: String
     , guess: String
     , result: (Int, Int)
-    , words: List String
-    , guess_count: Int
-    , guessed: Bool
+    , count: Int
+    , done: Bool
+    , cancelled: Bool
     , message: Message
     }
 
 emptyModel = { word = ""
+             , words = []
              , input = ""
              , guess=""
-             , guess_count = 0
              , result = (0, 0)
-             , words = []
-             , guessed = False
+             , count = 0
+             , done = False
+             , cancelled = False
              , message = DownloadMessage
              }
 
@@ -67,7 +69,7 @@ update action model =
         { model |
                   input <- str,
                   guess <- "",
-                  guessed <- False
+                  done <- False
          }
 
       Guess ->
@@ -78,8 +80,8 @@ update action model =
                            guess <- model.input,
                            result <- checkGuess model.word model.input,
                            input <- "",
-                           guess_count <- model.guess_count + 1,
-                           guessed <- model.input == model.word,
+                           count <- model.count + 1,
+                           done <- model.input == model.word,
                            message <- GuessMessage
                  }
             else { model |
@@ -100,7 +102,7 @@ update action model =
       ShowWord ->
           {
             emptyModel |
-                         guessed <- True,
+                         cancelled <- True,
                          words <- model.words,
                          word <- model.word
           }
@@ -117,63 +119,63 @@ update action model =
 view : Address Action -> Model -> Html
 view address model =
     let
-        restart_button =
-            button
-            [ onClick pickWord.address 1 ]
-            [ text "Restart" ]
+        restartButton = button [ onClick pickWord.address 1 ] [ text "Restart" ]
 
-        dict_div =
-            div
-            [ inputStyle ]
+        showResult =
+            \(b, c) -> toString b ++ " bulls, " ++ toString c ++ " cows" ++ " in '" ++ model.guess ++ "'"
+
+        guessCount =
+            \count -> toString count ++ if count == 1 then " guess" else " guesses"
+
+
+        result = if (model.count > 0 && not model.done && not model.cancelled)
+                 then
+                     div [] [ div
+                              [inputStyle]
+                              [text <| if model.guess == "" then "" else showResult model.result]
+                            , div [inputStyle] [guessCount model.count |> text]
+                            ]
+                 else div [][]
+
+        success = "Hooray! Guessed '" ++ model.word ++ "' in " ++ guessCount model.count
+
+        tweet_message = "Hooray! I Guessed '" ++ model.word ++ " 'in " ++ guessCount model.count ++ " at http://cowsnbulls.in"
+
+        tweet = ( a
+                  [ href ("https://twitter.com/home?status=" ++ tweet_message)
+                  , target "_blank"
+                  ]
+                  [ img
+                    [src "https://cdn3.iconfinder.com/data/icons/rcons-social/32/bird_twitter-32.png"]
+                    []
+                  ]
+                )
+
+        dictElements =
             [ ( a
                 [ href ("http://www.dict.org/bin/Dict?Form=Dict2&Database=*&Query=" ++ model.word)
                 , target "_blank"
                 ]
                 [ text <| "See meaning: " ++ model.word ]
-              ),
-              div [] [restart_button]
+              )
+            , div [] [restartButton]
             ]
 
-        show_result =
-            \(bulls, cows) -> toString bulls ++ " bulls, " ++ toString cows ++ " cows"
+        doneElements = List.append
+                       dictElements
+                       (if model.done then [ text <| success, div[][tweet] ] else [])
 
-        result =
-            div [inputStyle] [ text <|
-                                    if (model.guess == "" || model.guessed)
-                                    then ""
-                                    else (show_result model.result) ++ " in \"" ++ model.guess ++ "\""
-                             ]
-        guessed = if (model.guessed && model.guess_count > 0)
-                  then "Hooray! Guessed '" ++ model.word ++ "' in "
-                  else ""
-
-        guess_count = guessed ++ if model.guess_count > 0
-                                 then toString model.guess_count ++
-                                      if model.guess_count == 1 then " guess" else " guesses"
-                                 else ""
-
-        tweet = if not (guessed == "")
-                then ( a
-                       [ href ("https://twitter.com/home?status=" ++ guess_count ++ " at cowsnbulls.in")
-                       , target "_blank"
-                       ]
-                       [ img
-                         [src "https://cdn3.iconfinder.com/data/icons/rcons-social/32/bird_twitter-32.png"]
-                         []
-                       ]
-                     )
-                else a [] []
+        doneDiv = div [inputStyle] doneElements
 
     in
       div
       []
       [ siteHeader
-      , if model.guessed then dict_div else lazy2 guessWord address model
+      , if (model.done || model.cancelled) then doneDiv else lazy2 guessWord address model
       , result
-      , div [inputStyle] [ text <| guess_count, div [] [tweet] ]
       , button
         [ onClick address ShowWord
-        , if (model.guess_count > 0 && not model.guessed) then restartStyle else hideStyle
+        , if (model.count > 0 && not model.done) then restartStyle else hideStyle
         ]
         [ text "Give up" ]
       , siteFooter

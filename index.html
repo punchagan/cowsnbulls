@@ -4467,7 +4467,7 @@ Elm.Main.make = function (_elm) {
             switch (_.ctor)
             {case "_Tuple2": return _._0;}
             _U.badCase($moduleName,
-            "on line 353, column 18 to 55");
+            "on line 363, column 18 to 55");
          }();
          return $List.head(A2($List.drop,
          m,
@@ -4532,7 +4532,7 @@ Elm.Main.make = function (_elm) {
               noWordList.address,
               true);}
          _U.badCase($moduleName,
-         "between lines 306 and 311");
+         "between lines 316 and 321");
       }();
    };
    var getWords = Elm.Native.Task.make(_elm).perform(function () {
@@ -4618,7 +4618,11 @@ Elm.Main.make = function (_elm) {
                                                          ,_1: "center"}]));
    var siteHeader = A2($Html.header,
    _L.fromArray([headerStyle]),
-   _L.fromArray([$Html.text("Tell me you\'re free. I wanna play Cows & Bulls!")]));
+   _L.fromArray([$Html.text("Tell me you\'re free. I wanna play ")
+                ,A2($Html.a,
+                _L.fromArray([$Html$Attributes.href("https://en.wikipedia.org/wiki/Bulls_and_Cows#The_word_version")
+                             ,$Html$Attributes.target("_blank")]),
+                _L.fromArray([$Html.text("Cows & Bulls!")]))]));
    var siteFooter = A2($Html.footer,
    _L.fromArray([footerStyle]),
    _L.fromArray([A2($Html.a,
@@ -4705,11 +4709,13 @@ Elm.Main.make = function (_elm) {
             case "ErrorMessage":
             return "Only \'valid\' 4-letter, without repetition! Should we add word to our list?";
             case "GuessMessage":
-            return "Guess a 4-letter word.";
+            return "Next guess?";
             case "NoWordListMessage":
-            return "Failed to download word list.";}
+            return "Failed to download word list.";
+            case "StartMessage":
+            return "I thought of a 4-letter word. Guess";}
          _U.badCase($moduleName,
-         "between lines 24 and 28");
+         "between lines 24 and 29");
       }();
    };
    var guessWord = F2(function (address,
@@ -4782,7 +4788,7 @@ Elm.Main.make = function (_elm) {
                     model.guess,
                     "\'"))))));}
                _U.badCase($moduleName,
-               "on line 125, column 24 to 106");
+               "on line 126, column 24 to 106");
             }();
          };
          var result = _U.cmp(model.count,
@@ -4843,6 +4849,7 @@ Elm.Main.make = function (_elm) {
    var NoWordListMessage = {ctor: "NoWordListMessage"};
    var ErrorMessage = {ctor: "ErrorMessage"};
    var GuessMessage = {ctor: "GuessMessage"};
+   var StartMessage = {ctor: "StartMessage"};
    var DownloadMessage = {ctor: "DownloadMessage"};
    var emptyModel = {_: {}
                     ,cancelled: false
@@ -4892,7 +4899,7 @@ Elm.Main.make = function (_elm) {
                                action._0,
                                model.words))]
                               ,["words",model.words]
-                              ,["message",GuessMessage]],
+                              ,["message",StartMessage]],
               emptyModel);
             case "ShowWord":
             return _U.replace([["cancelled"
@@ -4911,7 +4918,7 @@ Elm.Main.make = function (_elm) {
                                ,action._0]],
               emptyModel);}
          _U.badCase($moduleName,
-         "between lines 65 and 115");
+         "between lines 66 and 116");
       }();
    });
    var model = A3($Signal.foldp,
@@ -4923,6 +4930,7 @@ Elm.Main.make = function (_elm) {
    model);
    _elm.Main.values = {_op: _op
                       ,DownloadMessage: DownloadMessage
+                      ,StartMessage: StartMessage
                       ,GuessMessage: GuessMessage
                       ,ErrorMessage: ErrorMessage
                       ,NoWordListMessage: NoWordListMessage

@@ -4467,7 +4467,7 @@ Elm.Main.make = function (_elm) {
             switch (_.ctor)
             {case "_Tuple2": return _._0;}
             _U.badCase($moduleName,
-            "on line 331, column 18 to 55");
+            "on line 351, column 18 to 55");
          }();
          return $List.head(A2($List.drop,
          m,
@@ -4504,30 +4504,42 @@ Elm.Main.make = function (_elm) {
                 ,_1: total - bulls};
       }();
    });
+   var noWordList = $Signal.mailbox(false);
    var pickWord = $Signal.mailbox(1);
    var clockSeed = A2($Signal._op["<~"],
    function (time) {
       return $Random.initialSeed($Basics.round(time));
    },
    $Time.every($Time.millisecond));
-   var word_db = $Signal.mailbox(_L.fromArray([]));
+   var wordDb = $Signal.mailbox(_L.fromArray([]));
+   var updateWords = function (content) {
+      return function () {
+         switch (content.ctor)
+         {case "Just":
+            return A2($Task.andThen,
+              A2($Signal.send,
+              wordDb.address,
+              $String.lines($String.trim(content._0))),
+              function (_v5) {
+                 return function () {
+                    return A2($Signal.send,
+                    pickWord.address,
+                    1);
+                 }();
+              });
+            case "Nothing":
+            return A2($Signal.send,
+              noWordList.address,
+              true);}
+         _U.badCase($moduleName,
+         "between lines 304 and 309");
+      }();
+   };
    var getWords = Elm.Native.Task.make(_elm).perform(function () {
       var url = "word_list_0a7bf29.txt";
       return A2($Task.andThen,
-      $Http.getString(url),
-      function (content) {
-         return A2($Task.andThen,
-         A2($Signal.send,
-         word_db.address,
-         $String.lines($String.trim(content))),
-         function (_v3) {
-            return function () {
-               return A2($Signal.send,
-               pickWord.address,
-               1);
-            }();
-         });
-      });
+      $Task.toMaybe($Http.getString(url)),
+      updateWords);
    }());
    var headerStyle = $Html$Attributes.style(_L.fromArray([{ctor: "_Tuple2"
                                                           ,_0: "width"
@@ -4625,7 +4637,7 @@ Elm.Main.make = function (_elm) {
       A2($Json$Decode.customDecoder,
       $Html$Events.keyCode,
       is13),
-      function (_v5) {
+      function (_v7) {
          return function () {
             return A2($Signal.message,
             address,
@@ -4633,6 +4645,10 @@ Elm.Main.make = function (_elm) {
          }();
       });
    });
+   var NoWordList = function (a) {
+      return {ctor: "NoWordList"
+             ,_0: a};
+   };
    var ShowWord = {ctor: "ShowWord"};
    var PickWord = function (a) {
       return {ctor: "PickWord"
@@ -4652,12 +4668,15 @@ Elm.Main.make = function (_elm) {
    var updateEvents = $Signal.mergeMany(_L.fromArray([actions.signal
                                                      ,A2($Signal.map,
                                                      UpdateWords,
-                                                     word_db.signal)
+                                                     wordDb.signal)
                                                      ,A2($Signal.map,
                                                      PickWord,
                                                      A2($Signal.sampleOn,
                                                      pickWord.signal,
-                                                     clockSeed))]));
+                                                     clockSeed))
+                                                     ,A2($Signal.map,
+                                                     NoWordList,
+                                                     noWordList.signal)]));
    var Model = F8(function (a,
    b,
    c,
@@ -4680,13 +4699,15 @@ Elm.Main.make = function (_elm) {
       return function () {
          switch (message.ctor)
          {case "DownloadMessage":
-            return "Wait, Downloading word-list...";
+            return "Wait, Downloading word list...";
             case "ErrorMessage":
             return "Only \'valid\' 4-letter, without repetition! Should we add word to our list?";
             case "GuessMessage":
-            return "Guess a 4-letter word.";}
+            return "Guess a 4-letter word.";
+            case "NoWordListMessage":
+            return "Failed to download word list.";}
          _U.badCase($moduleName,
-         "between lines 24 and 27");
+         "between lines 24 and 28");
       }();
    };
    var guessWord = F2(function (address,
@@ -4737,19 +4758,19 @@ Elm.Main.make = function (_elm) {
          _L.fromArray([]))])) : A2($Html.a,
          _L.fromArray([]),
          _L.fromArray([]));
-         var show_result = function (_v8) {
+         var show_result = function (_v10) {
             return function () {
-               switch (_v8.ctor)
+               switch (_v10.ctor)
                {case "_Tuple2":
                   return A2($Basics._op["++"],
-                    $Basics.toString(_v8._0),
+                    $Basics.toString(_v10._0),
                     A2($Basics._op["++"],
                     " bulls, ",
                     A2($Basics._op["++"],
-                    $Basics.toString(_v8._1),
+                    $Basics.toString(_v10._1),
                     " cows")));}
                _U.badCase($moduleName,
-               "on line 131, column 31 to 87");
+               "on line 138, column 31 to 87");
             }();
          };
          var result = A2($Html.div,
@@ -4804,6 +4825,7 @@ Elm.Main.make = function (_elm) {
                       ,siteFooter]));
       }();
    });
+   var NoWordListMessage = {ctor: "NoWordListMessage"};
    var ErrorMessage = {ctor: "ErrorMessage"};
    var GuessMessage = {ctor: "GuessMessage"};
    var DownloadMessage = {ctor: "DownloadMessage"};
@@ -4845,6 +4867,10 @@ Elm.Main.make = function (_elm) {
                  model);
               }();
             case "NoOp": return model;
+            case "NoWordList":
+            return _U.replace([["message"
+                               ,NoWordListMessage]],
+              emptyModel);
             case "PickWord":
             return _U.replace([["word"
                                ,$Maybe.withDefault("")(A2(getRandomItem,
@@ -4870,7 +4896,7 @@ Elm.Main.make = function (_elm) {
                                ,action._0]],
               emptyModel);}
          _U.badCase($moduleName,
-         "between lines 61 and 106");
+         "between lines 63 and 113");
       }();
    });
    var model = A3($Signal.foldp,
@@ -4884,6 +4910,7 @@ Elm.Main.make = function (_elm) {
                       ,DownloadMessage: DownloadMessage
                       ,GuessMessage: GuessMessage
                       ,ErrorMessage: ErrorMessage
+                      ,NoWordListMessage: NoWordListMessage
                       ,showMessage: showMessage
                       ,Model: Model
                       ,emptyModel: emptyModel
@@ -4893,6 +4920,7 @@ Elm.Main.make = function (_elm) {
                       ,UpdateWords: UpdateWords
                       ,PickWord: PickWord
                       ,ShowWord: ShowWord
+                      ,NoWordList: NoWordList
                       ,update: update
                       ,view: view
                       ,onEnter: onEnter
@@ -4907,9 +4935,11 @@ Elm.Main.make = function (_elm) {
                       ,headerStyle: headerStyle
                       ,main: main
                       ,model: model
-                      ,word_db: word_db
+                      ,wordDb: wordDb
                       ,clockSeed: clockSeed
                       ,pickWord: pickWord
+                      ,noWordList: noWordList
+                      ,updateWords: updateWords
                       ,actions: actions
                       ,updateEvents: updateEvents
                       ,checkGuess: checkGuess

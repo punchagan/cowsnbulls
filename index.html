@@ -4469,7 +4469,7 @@ Elm.Main.make = function (_elm) {
             switch (_.ctor)
             {case "_Tuple2": return _._0;}
             _U.badCase($moduleName,
-            "on line 378, column 18 to 55");
+            "on line 377, column 18 to 55");
          }();
          return $List.head(A2($List.drop,
          m,
@@ -4534,7 +4534,7 @@ Elm.Main.make = function (_elm) {
               noWordList.address,
               true);}
          _U.badCase($moduleName,
-         "between lines 331 and 337");
+         "between lines 330 and 336");
       }();
    };
    var updateWords = function (content) {
@@ -4558,7 +4558,7 @@ Elm.Main.make = function (_elm) {
               $Task.toMaybe($Storage.getItem("words")($Json$Decode.list($Json$Decode.string))),
               setWords);}
          _U.badCase($moduleName,
-         "between lines 318 and 327");
+         "between lines 317 and 326");
       }();
    };
    var getWords = Elm.Native.Task.make(_elm).perform(function () {
@@ -4618,9 +4618,6 @@ Elm.Main.make = function (_elm) {
                                                           ,{ctor: "_Tuple2"
                                                            ,_0: "padding"
                                                            ,_1: "10px"}
-                                                          ,{ctor: "_Tuple2"
-                                                           ,_0: "margin-left"
-                                                           ,_1: "48%"}
                                                           ,{ctor: "_Tuple2"
                                                            ,_0: "font-size"
                                                            ,_1: "1em"}
@@ -4766,6 +4763,14 @@ Elm.Main.make = function (_elm) {
    var view = F2(function (address,
    model) {
       return function () {
+         var giveUpButton = A2($Html.div,
+         _L.fromArray([_U.cmp(model.count,
+         0) > 0 && $Basics.not(model.done) ? restartStyle : hideStyle]),
+         _L.fromArray([A2($Html.button,
+         _L.fromArray([A2($Html$Events.onClick,
+         address,
+         ShowWord)]),
+         _L.fromArray([$Html.text("Give up")]))]));
          var guessCount = function (count) {
             return A2($Basics._op["++"],
             $Basics.toString(count),
@@ -4862,13 +4867,7 @@ Elm.Main.make = function (_elm) {
                       address,
                       model)
                       ,result
-                      ,A2($Html.button,
-                      _L.fromArray([A2($Html$Events.onClick,
-                                   address,
-                                   ShowWord)
-                                   ,_U.cmp(model.count,
-                                   0) > 0 && $Basics.not(model.done) ? restartStyle : hideStyle]),
-                      _L.fromArray([$Html.text("Give up")]))
+                      ,giveUpButton
                       ,siteFooter]));
       }();
    });

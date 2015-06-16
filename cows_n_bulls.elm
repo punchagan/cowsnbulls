@@ -131,6 +131,10 @@ view address model =
             \count -> toString count ++ if count == 1 then " guess" else " guesses"
 
 
+        giveUpButton = div
+                       [ if (model.count > 0 && not model.done) then restartStyle else hideStyle ]
+                       [ button [ onClick address ShowWord ] [ text "Give up" ] ]
+
         result = if (model.count > 0 && not model.done && not model.cancelled)
                  then
                      div [] [ div
@@ -176,11 +180,7 @@ view address model =
       [ siteHeader
       , if (model.done || model.cancelled) then doneDiv else lazy2 guessWord address model
       , result
-      , button
-        [ onClick address ShowWord
-        , if (model.count > 0 && not model.done) then restartStyle else hideStyle
-        ]
-        [ text "Give up" ]
+      , giveUpButton
       , siteFooter
       ]
 
@@ -253,7 +253,6 @@ restartStyle =
   style
   [ ("height", "40px")
   , ("padding", "10px")
-  , ("margin-left", "48%")
   , ("font-size", "1em")
   , ("text-align", "center")
   ]

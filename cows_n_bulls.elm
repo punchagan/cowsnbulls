@@ -6,11 +6,13 @@ import Html.Events exposing (keyCode, on, onClick, targetValue)
 import Html.Lazy exposing (lazy2)
 import Http
 import Json.Decode as Json
+import Json.Encode as Encode
 import List
 import Maybe
 import Random
 import Set
 import Signal exposing ((<~), Signal, Address)
+import Storage exposing (getItem, setItem)
 import String
 import Task exposing (andThen, Task, toMaybe)
 import Time exposing (every, millisecond)
@@ -311,17 +313,30 @@ noWordList : Signal.Mailbox Bool
 noWordList =
     Signal.mailbox False
 
-updateWords : (Maybe String) -> Task x ()
+updateWords : (Maybe String) -> Task String ()
 updateWords content =
     case content of
       Maybe.Nothing ->
-          Signal.send noWordList.address True
+          toMaybe (getItem "words" <| Json.list Json.string)
+          `andThen` setWords
+
       Maybe.Just s ->
-          (Signal.send wordDb.address (s |> String.trim |> String.lines))
-          `andThen` \_ -> (Signal.send pickWord.address 1)
+          let words = (s |> String.trim |> String.lines)
+          in
+            (setWords <| Maybe.Just words)
+            `andThen` \_ -> (setItem "words" <| Encode.list <| List.map Encode.string words)
 
+setWords : (Maybe (List String)) -> Task String ()
+setWords words =
+    case words of
+      Maybe.Nothing ->
+          Signal.send noWordList.address True
 
-port getWords : Task Http.Error ()
+      Maybe.Just w ->
+          Signal.send wordDb.address w
+               `andThen` \_ -> (Signal.send pickWord.address 1)
+
+port getWords : Task String ()
 port getWords =
     let
         url = "word_list.txt"

@@ -75,12 +75,12 @@ update action model =
          }
 
       Guess ->
-          let valid = validWord model.words model.input
+          let valid = validWord model.input model.words
           in
             if valid
             then { model |
-                           guess <- model.input,
-                           result <- checkGuess model.word model.input,
+                           guess <- String.toLower model.input,
+                           result <- checkGuess (String.toLower model.word) (String.toLower model.input),
                            input <- "",
                            count <- model.count + 1,
                            done <- model.input == model.word,
@@ -366,9 +366,9 @@ checkGuess word guess =
         bulls = String.filter (\x -> let y = String.fromChar x in String.indexes y word == String.indexes y guess) guess |> String.length
     in (bulls, total - bulls)
 
-validWord : (List String) -> String -> Bool
-validWord words guess =
-    List.member guess words
+validWord : String -> (List String) -> Bool
+validWord guess words =
+    List.member (String.toLower guess) words
 
 getRandomItem : Random.Seed -> List a -> Maybe a
 getRandomItem seed xs =

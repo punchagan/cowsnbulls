@@ -4469,7 +4469,7 @@ Elm.Main.make = function (_elm) {
             switch (_.ctor)
             {case "_Tuple2": return _._0;}
             _U.badCase($moduleName,
-            "on line 377, column 18 to 55");
+            "on line 376, column 18 to 55");
          }();
          return $List.head(A2($List.drop,
          m,
@@ -4534,7 +4534,7 @@ Elm.Main.make = function (_elm) {
               noWordList.address,
               true);}
          _U.badCase($moduleName,
-         "between lines 330 and 336");
+         "between lines 329 and 335");
       }();
    };
    var updateWords = function (content) {
@@ -4558,7 +4558,7 @@ Elm.Main.make = function (_elm) {
               $Task.toMaybe($Storage.getItem("words")($Json$Decode.list($Json$Decode.string))),
               setWords);}
          _U.badCase($moduleName,
-         "between lines 317 and 326");
+         "between lines 316 and 325");
       }();
    };
    var getWords = Elm.Native.Task.make(_elm).perform(function () {
@@ -4738,7 +4738,7 @@ Elm.Main.make = function (_elm) {
             case "StartMessage":
             return "I thought of a 4-letter word. Guess";}
          _U.badCase($moduleName,
-         "between lines 26 and 31");
+         "between lines 25 and 30");
       }();
    };
    var guessWord = F2(function (address,
@@ -4819,7 +4819,7 @@ Elm.Main.make = function (_elm) {
                     model.guess,
                     "\'"))))));}
                _U.badCase($moduleName,
-               "on line 128, column 24 to 106");
+               "on line 127, column 24 to 106");
             }();
          };
          var result = _U.cmp(model.count,
@@ -4934,7 +4934,7 @@ Elm.Main.make = function (_elm) {
               emptyModel);
             case "UpdateInput":
             return _U.replace([["input"
-                               ,action._0]
+                               ,$String.toLower(action._0)]
                               ,["guess",""]
                               ,["done",false]],
               model);
@@ -4943,7 +4943,7 @@ Elm.Main.make = function (_elm) {
                                ,action._0]],
               emptyModel);}
          _U.badCase($moduleName,
-         "between lines 68 and 118");
+         "between lines 67 and 117");
       }();
    });
    var model = A3($Signal.foldp,

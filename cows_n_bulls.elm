@@ -1,4 +1,3 @@
-import Char
 import Html exposing (a, Attribute, button, div, footer, header, Html, input, img, text)
 import Html.Attributes as Attr
         exposing (autofocus, href, id, maxlength, name, placeholder, src, style, target, value)
@@ -70,7 +69,7 @@ update action model =
 
       UpdateInput str ->
         { model |
-                  input <- str,
+                  input <- String.toLower str,
                   guess <- "",
                   done <- False
          }

@@ -4476,10 +4476,10 @@ Elm.Main.make = function (_elm) {
          xs));
       }();
    });
-   var validWord = F2(function (words,
-   guess) {
+   var validWord = F2(function (guess,
+   words) {
       return A2($List.member,
-      guess,
+      $String.toLower(guess),
       words);
    });
    var checkGuess = F2(function (word,
@@ -4895,14 +4895,14 @@ Elm.Main.make = function (_elm) {
          {case "Guess":
             return function () {
                  var valid = A2(validWord,
-                 model.words,
-                 model.input);
+                 model.input,
+                 model.words);
                  return valid ? _U.replace([["guess"
-                                            ,model.input]
+                                            ,$String.toLower(model.input)]
                                            ,["result"
                                             ,A2(checkGuess,
-                                            model.word,
-                                            model.input)]
+                                            $String.toLower(model.word),
+                                            $String.toLower(model.input))]
                                            ,["input",""]
                                            ,["count",model.count + 1]
                                            ,["done"

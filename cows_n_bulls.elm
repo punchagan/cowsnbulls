@@ -18,7 +18,13 @@ import Time exposing (every, millisecond)
 
 -- MODEL
 
-type Message = DownloadMessage | StartMessage | GuessMessage | ErrorMessage | NoWordListMessage
+type Message =
+    DownloadMessage
+        | StartMessage
+        | GuessMessage
+        | ErrorMessage
+        | NoWordListMessage
+        | GuessedMessage
 
 showMessage : Message -> String
 showMessage message =
@@ -27,18 +33,22 @@ showMessage message =
       NoWordListMessage -> "Failed to download word list."
       StartMessage -> "I thought of a 4-letter word. Guess"
       GuessMessage -> "Next guess?"
+      GuessedMessage -> "You have already guessed this!"
       ErrorMessage -> "Only 'valid' 4-letter, without repetition! Should we add word to our list?"
+
+type alias Score = (Int , Int)
 
 type alias Model =
     { word: String
     , words: List String
     , input: String
     , guess: String
-    , result: (Int, Int)
+    , result: Score
     , count: Int
     , done: Bool
     , cancelled: Bool
     , message: Message
+    , guesses: List (String, Score)
     }
 
 emptyModel = { word = ""
@@ -50,6 +60,7 @@ emptyModel = { word = ""
              , done = False
              , cancelled = False
              , message = DownloadMessage
+             , guesses = []
              }
 
 -- UPDATE
@@ -76,16 +87,25 @@ update action model =
 
       Guess ->
           let valid = validWord model.input model.words
+              guess = String.toLower model.input
+              guessed = List.member guess (List.map (\(x, _) -> x) model.guesses)
+              result = checkGuess (String.toLower model.word) (String.toLower model.input)
           in
-            if valid
+            if valid && not guessed
             then { model |
-                           guess <- String.toLower model.input,
-                           result <- checkGuess (String.toLower model.word) (String.toLower model.input),
+                           guess <- guess,
+                           result <- result,
                            input <- "",
                            count <- model.count + 1,
                            done <- model.input == model.word,
-                           message <- GuessMessage
+                           message <- GuessMessage,
+                           guesses <- model.guesses ++ [(guess, result)]
                  }
+            else if guessed then
+                     { model |
+                           input <- "",
+                           message <- GuessedMessage
+                     }
             else { model |
                            input <- "",
                            message <- ErrorMessage

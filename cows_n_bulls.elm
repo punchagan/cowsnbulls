@@ -1,4 +1,4 @@
-import Html exposing (a, Attribute, button, div, footer, header, Html, input, img, text)
+import Html exposing (a, Attribute, button, div, footer, header, Html, input, img, text, table, tr, td, th)
 import Html.Attributes as Attr
         exposing (autofocus, href, id, maxlength, name, placeholder, src, style, target, value)
 import Html.Events exposing (keyCode, on, onClick, targetValue)
@@ -49,6 +49,7 @@ type alias Model =
     , cancelled: Bool
     , message: Message
     , guesses: List (String, Score)
+    , show_history: Bool
     }
 
 emptyModel = { word = ""
@@ -61,6 +62,7 @@ emptyModel = { word = ""
              , cancelled = False
              , message = DownloadMessage
              , guesses = []
+             , show_history = False
              }
 
 -- UPDATE
@@ -72,6 +74,7 @@ type Action = NoOp
             | PickWord Random.Seed
             | ShowWord
             | NoWordList Bool
+            | ToggleShowHistory
 
 update : Action -> Model -> Model
 update action model =
@@ -136,6 +139,11 @@ update action model =
                          message <- StartMessage
           }
 
+      ToggleShowHistory ->
+          { model |
+                    show_history <- not model.show_history
+          }
+
 -- VIEW
 
 view : Address Action -> Model -> Html
@@ -149,10 +157,15 @@ view address model =
         guessCount =
             \count -> toString count ++ if count == 1 then " guess" else " guesses"
 
-
-        giveUpButton = div
-                       [ if (model.count > 0 && not model.done) then restartStyle else hideStyle ]
-                       [ button [ onClick address ShowWord ] [ text "Give up" ] ]
+        showHistoryButton = div
+                          [ if (model.count > 0 && not model.done) then restartStyle else hideStyle ]
+                          [ button
+                            [ onClick address (if not model.show_history
+                                               then ToggleShowHistory
+                                               else ShowWord)
+                            ]
+                            [ text <| if not model.show_history then "Show history" else "Give up" ]
+                          ]
 
         result = if (model.count > 0 && not model.done && not model.cancelled)
                  then
@@ -193,13 +206,39 @@ view address model =
 
         doneDiv = div [inputStyle] doneElements
 
+        history = div [contentStyle]
+                  [
+                   table
+                   [if model.show_history then tableStyle else hideStyle]
+                   ([tr
+                     []
+                     [ th [] [text "Guess"]
+                     , th [] [text "Bulls"]
+                     , th [] [text "Cows"]
+                     ]
+                    ] ++
+                    (List.map (\(w, (b, c)) -> tr
+                                               []
+                                               [ td [] [text w]
+                                               , td [] [text <| toString b]
+                                               , td [] [text <| toString c]
+                                               ]) model.guesses))
+                  ]
+
+        siteContent = div
+                      []
+                      [
+                       if (model.done || model.cancelled) then doneDiv else lazy2 guessWord address model
+                      , result
+                      , showHistoryButton
+                      , history
+                      ]
+
     in
       div
       []
       [ siteHeader
-      , if (model.done || model.cancelled) then doneDiv else lazy2 guessWord address model
-      , result
-      , giveUpButton
+      , siteContent
       , siteFooter
       ]
 
@@ -267,6 +306,14 @@ inputStyle =
     , ("text-align", "center")
     ]
 
+tableStyle : Attribute
+tableStyle =
+  style
+    [ ("width", "100%")
+    , ("font-size", "2em")
+    , ("text-align", "center")
+    ]
+
 restartStyle : Attribute
 restartStyle =
   style
@@ -291,7 +338,16 @@ footerStyle =
     , ("text-align", "center")
     , ("position", "absolute")
     , ("bottom", "0px")
+    , ("height", "20px")
     , ("border-top", "solid gray 1px")
+    ]
+
+contentStyle : Attribute
+contentStyle =
+    style
+    [
+      ("bottom", "20px")
+    , ("overflow", "auto")
     ]
 
 headerStyle : Attribute

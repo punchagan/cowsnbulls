@@ -1,6 +1,8 @@
-import Html exposing (a, Attribute, button, div, footer, header, Html, input, img, text, table, tr, td, th)
+module CowsNBulls where
+
+import Html exposing (a, Attribute, button, div, footer, form, h3, h4, Html, input, img, p, text, table, tr, td, th, thead, tbody)
 import Html.Attributes as Attr
-        exposing (autofocus, href, id, maxlength, name, placeholder, src, style, target, value)
+        exposing (action, autofocus, autocomplete, class, href, id, maxlength, name, placeholder, src, target, value, style)
 import Html.Events exposing (keyCode, on, onClick, targetValue)
 import Html.Lazy exposing (lazy2)
 import Http
@@ -84,7 +86,6 @@ update action model =
       UpdateInput str ->
         { model |
                   input <- String.toLower str,
-                  guess <- "",
                   done <- False
          }
 
@@ -126,10 +127,9 @@ update action model =
 
       ShowWord ->
           {
-            emptyModel |
-                         cancelled <- True,
-                         words <- model.words,
-                         word <- model.word
+            model |
+                    cancelled <- True,
+                    count <- 0
           }
 
       PickWord seed ->
@@ -146,101 +146,195 @@ update action model =
 
 -- VIEW
 
-view : Address Action -> Model -> Html
-view address model =
-    let
-        restartButton = button [ onClick pickWord.address 1 ] [ text "Restart" ]
+siteFooter : Html
+siteFooter = footer
+             [ class "navbar navbar-default navbar-fixed-bottom"
+             , style [("text-align", "center")]
+             ]
+             [ ( a
+                [ href ("https://github.com/punchagan/cowsnbulls")
+                , target "_blank"
+                ]
+                [ text <| "Built" ]
+               )
+             , text " with 💔 in Bangalore. In memory of the best cows & bulls player I've known."
+             ]
 
-        showResult =
-            \(b, c) -> toString b ++ " bulls, " ++ toString c ++ " cows" ++ " in '" ++ model.guess ++ "'"
+
+viewCard : List Html -> Html
+viewCard contents =
+    div
+    [ class "row" ]
+    [ div
+      [ class "col-xs-6 col-xs-offset-3" ]
+      [ div [ class "panel panel-default" ] contents ]
+    ]
+
+viewButton : Address Action -> Action -> String -> String -> Html
+viewButton address action extraTag label = button
+                                           [ onClick address action
+                                           , class <| "btn pull-right " ++ extraTag
+                                           ]
+                                           [ text label ]
+
+viewInputCard : Address Action -> Model -> Html
+viewInputCard address model =
+    let
+        title = h3
+                [ class "panel-title pull-left" ]
+                [ text "Tell me you're free. I wanna play "
+                , a
+                  [ href "https://en.wikipedia.org/wiki/Bulls_and_Cows#The_word_version"
+                  , target "_blank"
+                  ]
+                  [ text "Cows & Bulls!" ]
+                ]
+
+        showHistoryButton = viewButton address ToggleShowHistory "btn-warning" "Show Guesses"
+
+        giveUpButton = viewButton address ShowWord "btn-danger" "Give Up"
+
+        restartButton = button
+                        [ onClick pickWord.address 1
+                        , class "btn pull-right btn-primary"
+                        ]
+                        [ text "Restart" ]
+
+        scoreButton = if model.done || model.cancelled
+                      then restartButton
+                      else
+                          if not model.show_history
+                          then showHistoryButton
+                          else giveUpButton
+
+        inputHeading = div
+                       [ class "panel-heading clearfix" ]
+                       ( if model.done || model.cancelled || model.count > 0
+                         then [ title, scoreButton ]
+                         else [ title ]
+                       )
+
+        inputGuessField = input
+                     [ id "guess"
+                     , class "form-control"
+                     , placeholder <| showMessage model.message
+                     , maxlength 4
+                     , autofocus True
+                     , autocomplete False
+                     , value model.input
+                     , name "guess"
+                     , on "input" targetValue (Signal.message address << UpdateInput)
+                     , onEnter address Guess
+                     ]
+                     []
+
+        inputGuess = div [ class "form-group" ] [ div [ class "col-xs-12" ] [ inputGuessField ] ]
+
+        guessForm = div [ class "form-horizontal" ] [ inputGuess ]
+
+        lastScore = \(b, c) -> toString b ++ " bulls, " ++ toString c ++ " cows"
+
+        score = div
+                [ class "list-group-item" ]
+                [ p [class "list-group-item-text"] [text model.guess]
+                , h4 [class "list-group-item-heading"] [text <| lastScore model.result]
+                ]
+
+        scoreBody = div [ class "list-group" ] [ score, guesses ]
+
+        guesses = div
+                  [ class "list-group-item" ]
+                  [ p [class "list-group-item-text"] [text "Guesses"]
+                  , h4 [class "list-group-item-heading"] [text <| toString model.count]
+                  ]
+
+        inputBody = div [ class "panel-body" ] [ guessForm ]
+
+        dictLookup = p
+                     []
+                     [ text "See meaning: "
+                     , a
+                       [ href ("http://www.dict.org/bin/Dict?Form=Dict2&Database=*&Query=" ++ model.word)
+                       , target "_blank"
+                       ]
+                       [ text <| model.word ]
+                     ]
 
         guessCount =
             \count -> toString count ++ if count == 1 then " guess" else " guesses"
 
-        showHistoryButton = div
-                          [ if (model.count > 0 && not model.done) then restartStyle else hideStyle ]
-                          [ button
-                            [ onClick address (if not model.show_history
-                                               then ToggleShowHistory
-                                               else ShowWord)
-                            ]
-                            [ text <| if not model.show_history then "Show history" else "Give up" ]
-                          ]
+        successMessage = "Hooray! Guessed '" ++ model.word ++ "' in " ++ guessCount model.count
 
-        result = if (model.count > 0 && not model.done && not model.cancelled)
-                 then
-                     div [] [ div
-                              [inputStyle]
-                              [text <| if model.guess == "" then "" else showResult model.result]
-                            , div [inputStyle] [guessCount model.count |> text]
-                            ]
-                 else div [][]
+        tweetMessage = "Hooray! I Guessed '" ++ model.word ++ " 'in " ++ guessCount model.count ++ " at http://cowsnbulls.in"
 
-        success = "Hooray! Guessed '" ++ model.word ++ "' in " ++ guessCount model.count
-
-        tweet_message = "Hooray! I Guessed '" ++ model.word ++ " 'in " ++ guessCount model.count ++ " at http://cowsnbulls.in"
-
-        tweet = ( a
-                  [ href ("https://twitter.com/home?status=" ++ tweet_message)
-                  , target "_blank"
-                  ]
-                  [ img
-                    [src "https://cdn3.iconfinder.com/data/icons/rcons-social/32/bird_twitter-32.png"]
-                    []
-                  ]
-                )
-
-        dictElements =
-            [ ( a
-                [ href ("http://www.dict.org/bin/Dict?Form=Dict2&Database=*&Query=" ++ model.word)
+        tweetLink = a
+                [ href ("https://twitter.com/home?status=" ++ tweetMessage)
                 , target "_blank"
                 ]
-                [ text <| "See meaning: " ++ model.word ]
-              )
-            , div [] [restartButton]
-            ]
+                [ img
+                  [src "https://cdn3.iconfinder.com/data/icons/rcons-social/32/bird_twitter-32.png"]
+                  []
+                ]
 
-        doneElements = List.append
-                       dictElements
-                       (if model.done then [ text <| success, div[][tweet] ] else [])
+        success = div [] [ p [] [ text successMessage ], p [] [ tweetLink ] ]
 
-        doneDiv = div [inputStyle] doneElements
-
-        history = div [contentStyle]
-                  [
-                   table
-                   [if model.show_history then tableStyle else hideStyle]
-                   ([tr
-                     []
-                     [ th [] [text "Guess"]
-                     , th [] [text "Bulls"]
-                     , th [] [text "Cows"]
-                     ]
-                    ] ++
-                    (List.map (\(w, (b, c)) -> tr
-                                               []
-                                               [ td [] [text w]
-                                               , td [] [text <| toString b]
-                                               , td [] [text <| toString c]
-                                               ]) model.guesses))
-                  ]
-
-        siteContent = div
-                      []
-                      [
-                       if (model.done || model.cancelled) then doneDiv else lazy2 guessWord address model
-                      , result
-                      , showHistoryButton
-                      , history
-                      ]
+        doneBody = div [ class "panel-body" ]
+                   (if model.done then [ success, dictLookup ] else [ dictLookup ])
 
     in
-      div
-      []
-      [ siteHeader
-      , siteContent
-      , siteFooter
-      ]
+
+      viewCard <|
+                   [ inputHeading ]
+                   ++ [ if model.done || model.cancelled then doneBody else inputBody ]
+                   ++ ( if model.count > 0 then [ scoreBody ] else [] )
+
+viewHistoryCard : Address Action -> Model -> Html
+viewHistoryCard address model =
+    let
+        title = h3 [ class "panel-title pull-left" ] [ text "Your guesses" ]
+
+        historyHeading = div [ class "panel-heading clearfix" ] [ title ]
+
+        historyTable = table [ class "table table-hover" ] [ historyTableHead, historyTableBody ]
+
+        historyTableHead = thead
+                           []
+                           [
+                            tr
+                            [ class "active" ]
+                            [ th [] [text "Guess"]
+                            , th [] [text "Bulls"]
+                            , th [] [text "Cows"]
+                            ]
+                           ]
+
+        historyTableRow =
+            \(w, (b, c)) ->
+               tr
+               []
+               [ td [] [text w]
+               , td [] [text <| toString b]
+               , td [] [text <| toString c]
+               ]
+
+        historyTableBody = tbody
+                           []
+                           (List.map historyTableRow model.guesses)
+
+        historyBody = div [ class "table-responsive" ] [ historyTable ]
+
+    in
+
+      viewCard [ historyHeading, historyBody ]
+
+view : Address Action -> Model -> Html
+view address model =
+    div
+    []
+    [ viewInputCard address model
+    , if model.show_history then viewHistoryCard address model else div [] []
+    , siteFooter
+    ]
 
 onEnter : Address a -> a -> Attribute
 onEnter address value =
@@ -252,114 +346,6 @@ onEnter address value =
 is13 : Int -> Result String ()
 is13 code =
   if code == 13 then Ok () else Err "not the right key code"
-
-guessWord : Address Action -> Model -> Html
-guessWord address model =
-      input
-        [ id "guess"
-        , placeholder <| showMessage model.message
-        , maxlength 4
-        , autofocus True
-        , value model.input
-        , name "guess"
-        , on "input" targetValue (Signal.message address << UpdateInput)
-        , onEnter address Guess
-        , inputStyle
-        ]
-        []
-
-
-siteFooter : Html
-siteFooter = footer
-             [ footerStyle ]
-             [ ( a
-                [ href ("https://github.com/punchagan/cowsnbulls")
-                , target "_blank"
-                ]
-                [ text <| "Built" ]
-               )
-             , text " with 💔 in Bangalore. In memory of the best cows & bulls player I've known."
-             ]
-
-siteHeader : Html
-siteHeader = header
-             [ headerStyle ]
-             [ text "Tell me you're free. I wanna play "
-             , a
-               [ href "https://en.wikipedia.org/wiki/Bulls_and_Cows#The_word_version"
-               , target "_blank"
-               ]
-               [ text "Cows & Bulls!" ]
-             ]
-
-
-
--- STYLES
-
-inputStyle : Attribute
-inputStyle =
-  style
-    [ ("width", "100%")
-    , ("height", "40px")
-    , ("padding", "10px 0")
-    , ("font-size", "2em")
-    , ("text-align", "center")
-    ]
-
-tableStyle : Attribute
-tableStyle =
-  style
-    [ ("width", "100%")
-    , ("font-size", "2em")
-    , ("text-align", "center")
-    ]
-
-restartStyle : Attribute
-restartStyle =
-  style
-  [ ("height", "40px")
-  , ("padding", "10px")
-  , ("font-size", "1em")
-  , ("text-align", "center")
-  ]
-
-hideStyle : Attribute
-hideStyle =
-  style
-  [ ("display", "None") ]
-
-footerStyle : Attribute
-footerStyle =
-  style
-    [ ("width", "100%")
-    , ("padding", "10px 0")
-    , ("font-size", "1em")
-    , ("opacity", "0.5")
-    , ("text-align", "center")
-    , ("position", "absolute")
-    , ("bottom", "0px")
-    , ("height", "20px")
-    , ("border-top", "solid gray 1px")
-    ]
-
-contentStyle : Attribute
-contentStyle =
-    style
-    [
-      ("bottom", "20px")
-    , ("overflow", "auto")
-    ]
-
-headerStyle : Attribute
-headerStyle =
-  style
-    [ ("width", "100%")
-    , ("padding", "10px 0")
-    , ("font-size", "2.25em")
-    , ("opacity", "0.6")
-    , ("text-align", "center")
-    , ("top", "0px")
-    ]
 
 -- SIGNALS
 

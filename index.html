@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Cows & Bulls!</title>
+    <!-- Bootcards CSS for desktop: -->
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/bootcards/1.0.0/css/bootcards-desktop.min.css">
+    <!-- Bootstrap and Bootcards JS -->
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootcards/1.0.0/js/bootcards.min.js"></script>
+    <script type="text/javascript" src="elm.js"></script>
+  </head>
+
+  <body>
+    <div id="cows-n-bulls" class="container"></div>
+  </body>
+
+  <script type="text/javascript">
+    var cnbDiv = document.getElementById('cows-n-bulls');
+    Elm.embed(Elm.CowsNBulls, cnbDiv);
+  </script>
+
+</html>

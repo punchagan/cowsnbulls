@@ -1032,7 +1032,12 @@ Elm.CowsNBulls.make = function (_elm) {
                 _L.fromArray([$Html$Attributes.href("https://github.com/punchagan/cowsnbulls")
                              ,$Html$Attributes.target("_blank")]),
                 _L.fromArray([$Html.text("Built")]))
-                ,$Html.text(" with 💔 in Bangalore. In memory of the best cows & bulls player I\'ve known.")]));
+                ,$Html.text(" with 💔 in Bangalore. In memory of the best ")
+                ,A2($Html.a,
+                _L.fromArray([$Html$Attributes.href("https://en.wikipedia.org/wiki/Bulls_and_Cows#The_word_version")
+                             ,$Html$Attributes.target("_blank")]),
+                _L.fromArray([$Html.text("cows & bulls")]))
+                ,$Html.text(" player I\'ve known.")]));
    var ToggleShowHistory = {ctor: "ToggleShowHistory"};
    var NoWordList = function (a) {
       return {ctor: "NoWordList"
@@ -1254,11 +1259,7 @@ Elm.CowsNBulls.make = function (_elm) {
          var scoreButton = model.done || model.cancelled ? restartButton : $Basics.not(model.show_history) ? showHistoryButton : giveUpButton;
          var title = A2($Html.h3,
          _L.fromArray([$Html$Attributes.$class("panel-title pull-left")]),
-         _L.fromArray([$Html.text("Tell me you\'re free. I wanna play ")
-                      ,A2($Html.a,
-                      _L.fromArray([$Html$Attributes.href("https://en.wikipedia.org/wiki/Bulls_and_Cows#The_word_version")
-                                   ,$Html$Attributes.target("_blank")]),
-                      _L.fromArray([$Html.text("Cows & Bulls!")]))]));
+         _L.fromArray([$Html.text("Tell me you\'re free. I wanna play Cows & Bulls!")]));
          var inputHeading = A2($Html.div,
          _L.fromArray([$Html$Attributes.$class("panel-heading clearfix")]),
          model.done || (model.cancelled || _U.cmp(model.count,

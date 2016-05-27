@@ -157,9 +157,15 @@ siteFooter = footer
                 ]
                 [ text <| "Built" ]
                )
-             , text " with 💔 in Bangalore. In memory of the best cows & bulls player I've known."
+             , text " with 💔 in Bangalore. In memory of the best "
+             , ( a
+                [ href ("https://en.wikipedia.org/wiki/Bulls_and_Cows#The_word_version")
+                , target "_blank"
+                ]
+                [ text <| "cows & bulls" ]
+               )
+             , text " player I've known."
              ]
-
 
 viewCard : List Html -> Html
 viewCard contents =
@@ -182,13 +188,7 @@ viewInputCard address model =
     let
         title = h3
                 [ class "panel-title pull-left" ]
-                [ text "Tell me you're free. I wanna play "
-                , a
-                  [ href "https://en.wikipedia.org/wiki/Bulls_and_Cows#The_word_version"
-                  , target "_blank"
-                  ]
-                  [ text "Cows & Bulls!" ]
-                ]
+                [ text "Tell me you're free. I wanna play Cows & Bulls!" ]
 
         showHistoryButton = viewButton address ToggleShowHistory "btn-warning" "Show Guesses"
 

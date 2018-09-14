@@ -172,7 +172,7 @@ viewCard contents =
     div
     [ class "row" ]
     [ div
-      [ class "col-xs-6 col-xs-offset-3" ]
+      [ class "col-md-6 col-md-offset-3 col-xs-12" ]
       [ div [ class "panel panel-default" ] contents ]
     ]
 
